@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS workouts (
 );
 
 CREATE TABLE IF NOT EXISTS exercises (
-    id TEXT PRIMARY KEY,
+    name TEXT PRIMARY KEY,
     data TEXT NOT NULL
 );
 

@@ -10,11 +10,13 @@ import (
 	_ "modernc.org/sqlite"
 )
 
-var addExerciseText string = `INSERT INTO exercises (id, data) VALUES (?,?);`
+var addExerciseText string = `INSERT INTO exercises (name, data) VALUES (?,?);`
 
 var addWorkoutText string = `INSERT INTO workouts (start_time, user_email, data) VALUES (?,?,?);`
 
 var getUserWorkoutsText string = `SELECT data FROM workouts WHERE user_email=?;`
+
+var getAllExercisesText string = `SELECT data FROM exercises;`
 
 var rootPathDB string = "../../data/"
 var dataPathDB string = rootPathDB + "data.db"
@@ -33,7 +35,7 @@ func Close(db *sql.DB) {
 }
 
 func AddExercise(db *sql.DB, exercise structapi.Exercise) {
-	jsonData, err := json.Marshal(exercise.MuscleFractions)
+	jsonData, err := json.Marshal(exercise)
 	if err != nil {
 		log.Fatal(err)
 		return
@@ -97,4 +99,33 @@ func GetAllUserWorkouts(db *sql.DB, email string) []structapi.WorkoutInstance {
 		workouts = append(workouts, workout)
 	}
 	return workouts
+}
+
+func GetExercises(db *sql.DB) []structapi.Exercise {
+	stmt, err := db.Prepare(getAllExercisesText)
+	if err != nil {
+		log.Fatal(err)
+		return nil
+	}
+	defer stmt.Close()
+	rows, err := stmt.Query()
+	if err != nil {
+		log.Fatal(err)
+		return nil
+	}
+	var exercises []structapi.Exercise
+	var rawExercise []byte
+	var exercise structapi.Exercise
+	for rows.Next() {
+		exercise = structapi.Exercise{}
+		rawExercise = nil
+		err := rows.Scan(&rawExercise)
+		fmt.Printf("row: %s\n", rawExercise)
+		if err != nil {
+			log.Fatal(err)
+		}
+		json.Unmarshal(rawExercise, &exercise)
+		exercises = append(exercises, exercise)
+	}
+	return exercises
 }
