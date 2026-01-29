@@ -1,0 +1,123 @@
+{{ block "add_exercise" . }}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js" integrity="sha384-/TgkGk7p307TH7EXJDuUlgG3Ce1UVolAOFopFekQkkXihi5u/6OCvVKyz1W+idaz" crossorigin="anonymous"></script>
+    <title>Exercise Form</title>
+    
+</head>
+<body>
+
+    {{ template "add_exercise_form" . }}
+    <script>
+        // Static list of detail names for the dropdown
+        const detailNames = [{{ range .Muscles }} '{{ . }}', {{ end }}];
+
+        // Function to create a new exercise input set (dropdown and input)
+        function createExerciseInput() {
+            const exerciseDetails = document.getElementById("exerciseDetails");
+            const newInputGroup = document.createElement("div");
+            newInputGroup.classList.add("exercise-inputs");
+
+            // Create a label for the select field (Detail Name)
+            const newNameLabel = document.createElement("label");
+            newNameLabel.textContent = "Detail Name";
+            newNameLabel.setAttribute("for", "detailName");
+
+            // Create new select element with static options
+            const newNameSelect = document.createElement("select");
+            newNameSelect.setAttribute("name", "detailName");
+            newNameSelect.setAttribute("id", "detailName");
+            newNameSelect.required = true;
+
+            // Add default "Select Detail" option
+            const defaultOption = document.createElement("option");
+            defaultOption.value = "";
+            defaultOption.textContent = "Select Detail";
+            newNameSelect.appendChild(defaultOption);
+
+            // Add static options to the select dropdown (no randomness)
+            for (let i = 0; i < detailNames.length; i++) {
+                const option = document.createElement("option");
+                option.value = detailNames[i].toLowerCase();
+                option.textContent = detailNames[i];
+                newNameSelect.appendChild(option);
+            }
+
+            // Create a label for the input field (Detail Value)
+            const newValueLabel = document.createElement("label");
+            newValueLabel.textContent = "Detail Value";
+            newValueLabel.setAttribute("for", "detailValue");
+
+            // Create a new input field for the value (float)
+            const newValueInput = document.createElement("input");
+            newValueInput.setAttribute("type", "number");
+            newValueInput.setAttribute("name", "detailValue");
+            newValueInput.setAttribute("id", "detailValue");
+            newValueInput.setAttribute("placeholder", "Value (float)");
+            newValueInput.setAttribute("step", "0.01");
+            newValueInput.required = true;
+
+            // Create a remove button
+            const removeButton = document.createElement("button");
+            removeButton.type = "button";
+            removeButton.textContent = "Remove";
+            removeButton.classList.add("remove-btn");
+
+            // Add remove functionality
+            removeButton.addEventListener("click", function() {
+                newInputGroup.remove();
+            });
+
+            // Append the labels, select, input fields, and remove button to the new group
+            newInputGroup.appendChild(newNameLabel);
+            newInputGroup.appendChild(newNameSelect);
+            newInputGroup.appendChild(newValueLabel);
+            newInputGroup.appendChild(newValueInput);
+            newInputGroup.appendChild(removeButton);
+
+            // Add the new group of inputs to the exerciseDetails container
+            exerciseDetails.appendChild(newInputGroup);
+        }
+
+        // Create the first exercise input on page load
+        window.onload = function() {
+            createExerciseInput(); // Call to create the first exercise input
+        };
+
+        // Handle adding new inputs when the add button is clicked
+        document.getElementById("addInputBtn").addEventListener("click", function() {
+            createExerciseInput(); // Call to create a new set of inputs dynamically
+        });
+    </script>
+
+</body>
+</html>
+{{ end }}
+
+{{ block "add_exercise_form" .}}
+    <div class="container">
+        <h1>Exercise Form</h1>
+        <form id="exerciseForm" hx-post="/exercises2" method="POST">
+            <!-- Exercise Name -->
+            <div class="form-group">
+                <label for="exerciseName">Exercise Name</label>
+                <input type="text" id="exerciseName" name="exerciseName" required placeholder="Enter exercise name">
+            </div>
+
+            <!-- Dynamic Inputs for Exercise Details (Dropdown Name and Value) -->
+            <div id="exerciseDetails" class="form-group">
+                <label>Exercise Details</label>
+                <!-- The first exercise detail will be added dynamically by JavaScript -->
+            </div>
+
+            <!-- Add Button -->
+            <button type="button" id="addInputBtn" class="add-btn">+ Add Detail</button>
+
+            <br><br>
+            <button type="submit" class="add-btn">Submit</button>
+        </form>
+    </div>
+{{ end }}

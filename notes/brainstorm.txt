@@ -1,0 +1,18 @@
+Modes:
+  Planning - build a workout plan
+  Active - execute a workout, often according to preexisting workout plan
+  Record - record a workout
+  Review - observe progress through lists and graphs
+
+Planning Actions
+  Add Exercise
+  Make workout (exercises, RPE, goal weight/reps for each exercise)
+  Make Mesocycle
+  Make Macrocycle
+  
+
+Active Actions
+  Start workout
+    Specify the associated planned workout
+  Record sets & weight for each workout
+

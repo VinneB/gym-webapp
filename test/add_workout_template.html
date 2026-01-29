@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Workout Template</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Base + Dashboard styles -->
+    <link rel="stylesheet" href="templatemo-daynight-style.css">
+    <link rel="stylesheet" href="exercise-dashboard.css">
+</head>
+
+<body>
+
+<div class="app">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h2>🏋 Training</h2>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="#">Dashboard</a>
+            <a href="#" class="active">New Template</a>
+            <a href="#">Exercises</a>
+            <a href="#">Progress</a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+        <header class="page-header">
+            <h1>Create Workout Template</h1>
+            <p>Define exercises, sets, and rep ranges</p>
+        </header>
+
+        <div class="one-col">
+            <div class="card">
+
+                <form id="workout-form">
+
+                    <!-- Template Name -->
+                    <div class="form-group">
+                        <label>Workout Name</label>
+                        <input type="text" placeholder="e.g. Upper Push Day" required>
+                    </div>
+
+                    <!-- Sets Table -->
+                    <div class="card-header" style="margin-top:24px;">
+                        <h3 class="card-title">Sets</h3>
+                    </div>
+
+                    <div id="sets-container">
+                        <!-- Rows injected here -->
+                    </div>
+
+                    <button
+                        type="button"
+                        id="add-set"
+                        class="theme-btn"
+                        style="margin-top:12px;"
+                    >
+                        + Add Set
+                    </button>
+
+                    <hr style="margin:32px 0; border-color: var(--border-color);">
+
+                    <button type="submit" class="theme-btn theme-btn-snow">
+                        Save Workout Template
+                    </button>
+
+                </form>
+
+            </div>
+        </div>
+
+    </main>
+
+</div>
+
+<script>
+const setsContainer = document.getElementById('sets-container');
+const addSetBtn = document.getElementById('add-set');
+
+function createSetRow() {
+    const row = document.createElement('div');
+    row.className = 'set-row';
+
+    row.innerHTML = `
+        <select required>
+            <option value="">Exercise</option>
+            <option>Barbell Bench Press</option>
+            <option>Overhead Press</option>
+            <option>Barbell Row</option>
+            <option>Squat</option>
+            <option>Deadlift</option>
+        </select>
+
+        <input type="number" placeholder="Weight" min="0" required>
+
+        <input type="number" placeholder="Min Reps" min="1" required>
+
+        <input type="number" placeholder="Max Reps" min="1" required>
+
+        <button type="button" class="remove-set">✕</button>
+    `;
+
+    row.querySelector('.remove-set').addEventListener('click', () => {
+        row.remove();
+    });
+
+    setsContainer.appendChild(row);
+}
+
+addSetBtn.addEventListener('click', createSetRow);
+
+// Add one row by default
+createSetRow();
+</script>
+
+</body>
+</html>

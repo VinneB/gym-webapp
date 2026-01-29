@@ -16,13 +16,25 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS workouts (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     start_time INTEGER NOT NULL,
-    user_email TEXT NOT NULL,
-    data TEXT NOT NULL
+    end_time INTEGER,
+    user_email TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS exercises (
     name TEXT PRIMARY KEY,
     data TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS sets (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  exercise_name TEXT NOT NULL,
+  reps INTEGER NOT NULL,
+  partial_reps INTEGER NOT NULL,
+  weight INTEGER,
+  workout_id INTEGER NOT NULL,
+  time TEXT,
+  type TEXT,
+  user_email TEXT NOT NULL
 );
 
 "

@@ -8,7 +8,7 @@ import (
 	//	"time"
 
 	"github.com/VinneB/gym-webapp/internal/server"
-	"github.com/VinneB/gym-webapp/internal/sql"
+	//"github.com/VinneB/gym-webapp/internal/sql"
 	//"github.com/VinneB/gym-webapp/internal/structapi"
 )
 
@@ -25,12 +25,6 @@ func main() {
 		//		}
 		//		sql.Close(db)
 		//		fmt.Println("done")
-		db := sql.Connect()
-		result := sql.GetExercises(db)
-		for _, value := range result {
-			fmt.Println(value)
-		}
-		sql.Close(db)
 	} else if slices.Contains(os.Args[1:], serverString) && !slices.Contains(os.Args[1:], cliString) {
 		//		db := sql.Connect()
 		//		time1 := time.Now()

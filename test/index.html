@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Training Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Existing stylesheet -->
+    <link rel="stylesheet" href="templatemo-daynight-style.css">
+    <link rel="stylesheet" href="exercise-dashboard.css">
+</head>
+
+<body>
+
+<div class="app">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h2>🏋 Training</h2>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="#" class="active">Dashboard</a>
+            <a href="#">Log Workout</a>
+            <a href="#">Exercises</a>
+            <a href="#">Progress</a>
+            <a href="#">Settings</a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+        <!-- Header -->
+        <header class="page-header">
+            <h1>Training Dashboard</h1>
+            <p>Track workouts, volume, and progress</p>
+        </header>
+
+        <!-- Top Metrics -->
+        <div class="three-col">
+            <div class="card">
+                <h3 class="card-title">Workouts This Week</h3>
+                <p class="metric">4</p>
+            </div>
+
+            <div class="card">
+                <h3 class="card-title">Total Sets</h3>
+                <p class="metric">82</p>
+            </div>
+
+            <div class="card">
+                <h3 class="card-title">Active Program</h3>
+                <p class="metric">Hypertrophy</p>
+            </div>
+        </div>
+
+        <!-- Log Exercise -->
+        <div class="two-col">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Log New Exercise</h3>
+                </div>
+
+                <div class="card-content">
+                    <form>
+                        <div class="form-group">
+                            <label>Exercise</label>
+                            <input type="text" placeholder="e.g. Barbell Bench Press">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Sets</label>
+                            <input type="number" placeholder="5">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Reps</label>
+                            <input type="number" placeholder="8">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Weight</label>
+                            <input type="number" placeholder="225 lbs">
+                        </div>
+
+                        <button type="submit" class="theme-btn theme-btn-snow">
+                            Add Exercise
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Training Notes -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Training Notes</h3>
+                </div>
+
+                <div class="card-content">
+                    <textarea rows="10" placeholder="Notes on fatigue, soreness, cues..."></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Weekly Volume -->
+        <div class="two-col">
+            <div class="card">
+                <h3 class="card-title">Weekly Volume</h3>
+                <ul class="list">
+                    <li>Chest — 22 sets</li>
+                    <li>Back — 24 sets</li>
+                    <li>Shoulders — 20 sets</li>
+                    <li>Arms — 28 sets</li>
+                    <li>Legs — 18 sets</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3 class="card-title">Recovery Status</h3>
+                <ul class="list">
+                    <li>Sleep — Good</li>
+                    <li>Soreness — Moderate</li>
+                    <li>Readiness — High</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Recent Workouts -->
+        <div class="one-col">
+            <div class="card">
+                <h3 class="card-title">Recent Workouts</h3>
+
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Workout</th>
+                            <th>Duration</th>
+                            <th>Volume</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Mon</td>
+                            <td>Upper Push</td>
+                            <td>65 min</td>
+                            <td>18,400 lbs</td>
+                        </tr>
+                        <tr>
+                            <td>Tue</td>
+                            <td>Upper Pull</td>
+                            <td>70 min</td>
+                            <td>21,100 lbs</td>
+                        </tr>
+                        <tr>
+                            <td>Thu</td>
+                            <td>Legs</td>
+                            <td>60 min</td>
+                            <td>19,800 lbs</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+</div>
+
+</body>
+</html>

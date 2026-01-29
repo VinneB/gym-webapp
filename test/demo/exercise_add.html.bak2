@@ -1,0 +1,157 @@
+{{ block "add_exercise" . }}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js" integrity="sha384-/TgkGk7p307TH7EXJDuUlgG3Ce1UVolAOFopFekQkkXihi5u/6OCvVKyz1W+idaz" crossorigin="anonymous"></script>
+    <title>Exercise Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            font-size: 14px;
+            color: #555;
+        }
+        .exercise-inputs {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+        .exercise-inputs select, .exercise-inputs input {
+            width: 45%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .add-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .add-btn:hover {
+            background-color: #45a049;
+        }
+        .remove-btn {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .remove-btn:hover {
+            background-color: #e53935;
+        }
+    </style>
+</head>
+<body>
+
+    {{ template "add_exercise_form" . }}
+    <script>
+        // Static list of detail names for the dropdown
+    const detailNames = [{{ range .Muscles }} '{{ . }}', {{ end }}];
+
+        // Function to create a new exercise input set (dropdown and input)
+        function createExerciseInput() {
+            const exerciseDetails = document.getElementById("exerciseDetails");
+            const newInputGroup = document.createElement("div");
+            newInputGroup.classList.add("exercise-inputs");
+
+            // Create new select element with static options
+            const newNameSelect = document.createElement("select");
+            newNameSelect.setAttribute("name", "detailName");
+            newNameSelect.required = true;
+
+            // Add default "Select Detail" option
+            const defaultOption = document.createElement("option");
+            defaultOption.value = "";
+            defaultOption.textContent = "Select Detail";
+            newNameSelect.appendChild(defaultOption);
+
+            // Add static options to the select dropdown (no randomness)
+            for (let i = 0; i < detailNames.length; i++) {
+                const option = document.createElement("option");
+                option.value = detailNames[i].toLowerCase();
+                option.textContent = detailNames[i];
+                newNameSelect.appendChild(option);
+            }
+
+            // Create a new input field for the value (float)
+            const newValueInput = document.createElement("input");
+            newValueInput.setAttribute("type", "number");
+            newValueInput.setAttribute("name", "detailValue");
+            newValueInput.setAttribute("placeholder", "Value (float)");
+            newValueInput.setAttribute("step", "0.01");
+            newValueInput.required = true;
+
+            // Append the new select and input fields to the new group
+            newInputGroup.appendChild(newNameSelect);
+            newInputGroup.appendChild(newValueInput);
+
+            // Add the new group of inputs to the exerciseDetails container
+            exerciseDetails.appendChild(newInputGroup);
+        }
+
+        // Create the first exercise input on page load
+        window.onload = function() {
+            createExerciseInput(); // Call to create the first exercise input
+        };
+
+        // Handle adding new inputs when the add button is clicked
+        document.getElementById("addInputBtn").addEventListener("click", function() {
+            createExerciseInput(); // Call to create a new set of inputs dynamically
+        });
+    </script>
+
+</body>
+</html>
+{{ end }}
+
+{{ block "add_exercise_form" .}}
+    <div class="container">
+        <h1>Exercise Form</h1>
+        <form id="exerciseForm" hx-post="/exercises2" method="POST">
+            <!-- Exercise Name -->
+            <div class="form-group">
+                <label for="exerciseName">Exercise Name</label>
+                <input type="text" id="exerciseName" name="exerciseName" required placeholder="Enter exercise name">
+            </div>
+
+            <!-- Dynamic Inputs for Exercise Details (Dropdown Name and Value) -->
+            <div id="exerciseDetails" class="form-group">
+                <label>Exercise Details</label>
+                <!-- The first exercise detail will be added dynamically by JavaScript -->
+            </div>
+
+            <!-- Add Button -->
+            <button type="button" id="addInputBtn" class="add-btn">+ Add Detail</button>
+
+            <br><br>
+            <button type="submit" class="add-btn">Submit</button>
+        </form>
+    </div>
+{{ end }}
