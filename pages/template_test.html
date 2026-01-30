@@ -21,6 +21,11 @@
         evt.detail.isError = false;
       }
     });
+    document.body.addEventListener("htmx:afterSwap", function(evt) {
+      if (evt.target.id === "add_exercise_form_div") {
+        createExerciseInput() 
+      }
+    });
   })
   </script>
 </body>
@@ -49,9 +54,9 @@
 {{ end }}
 
 {{ block "add_exercise_form" .}}
-    <div class="container">
+    <div id="add_exercise_form_div" class="container">
         <h1>Exercise Form</h1>
-        <form id="exerciseForm" hx-post="/htmx/exercises" method="POST">
+        <form id="exerciseForm" hx-post="/htmx/exercises" hx-target="#add_exercise_form_div" method="POST">
             <!-- Exercise Name -->
             <div class="form-group">
                 <label for="exerciseName">Exercise Name</label>

@@ -94,6 +94,12 @@ func getData(path string) (structapi.Data, error) {
 			return structapi.Data{}, err
 		}
 		data.Exercises = exercises
+	} else if path == "/htmx/exercises" {
+		exercises, err := sql.GetExercises()
+		if err != nil {
+			return structapi.Data{}, err
+		}
+		data.Exercises = exercises
 	}
 	return data, nil
 }

@@ -185,8 +185,19 @@ func GetExercises() ([]structapi.Exercise, error) {
 		log.Println(err)
 		return nil, err
 	}
-	return sqlF, nil
+	exercises := []structapi.Exercise{}
+	for _, value := range exercisesRaw {
+		exercise, err := sqlFormToExercise(value)
+		if err != nil {
+			log.Println(err)
+			return nil, err
+		}
+		exercises = append(exercises, exercise)
+	}
+
+	return exercises, nil
 }
+
 func dep_GetExercises() ([]structapi.Exercise, error) {
 	stmt, err := db.Prepare(getAllExercisesText)
 	if err != nil {
@@ -217,11 +228,11 @@ func dep_GetExercises() ([]structapi.Exercise, error) {
 	return exercises, nil
 }
 
-func sqlFormToExercise(exerciseRaw structapi.ExerciseSqlForm) structapi.Exercise {
+func sqlFormToExercise(exerciseRaw structapi.ExerciseSqlForm) (structapi.Exercise, error) {
 	muscleFractions := []structapi.MuscleFraction{}
-	err := json.Unmarshal([]byte(exerciseRaw.MuscleFractions), muscleFractions)
+	err := json.Unmarshal([]byte(exerciseRaw.MuscleFractions), &muscleFractions)
 	if err != nil {
-		return err
+		return structapi.Exercise{}, err
 	}
-	return structapi.Exercise{Name: exerciseRaw.Name, MuscleFractions: muscleFractions}
+	return structapi.Exercise{Name: exerciseRaw.Name, MuscleFractions: muscleFractions}, nil
 }

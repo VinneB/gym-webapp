@@ -62,4 +62,14 @@ func ExercisesPostHandler(w http.ResponseWriter, r *http.Request) {
 		SendError(w, r, http.StatusUnprocessableEntity, err.Error())
 		return
 	}
+	// Render
+	data, err := getData(r.URL.Path)
+	if err != nil {
+		log.Println(err)
+		SendError(w, r, http.StatusUnprocessableEntity, "Error")
+		return
+	}
+	renderer := newTemplate()
+	renderer.Render(w, "add_exercise_list", data)
+	renderer.Render(w, "add_exercise_form", data)
 }

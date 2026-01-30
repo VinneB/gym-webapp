@@ -2,7 +2,10 @@ module github.com/VinneB/gym-webapp
 
 go 1.25
 
-require modernc.org/sqlite v1.44.2
+require (
+	github.com/jmoiron/sqlx v1.4.0
+	modernc.org/sqlite v1.44.2
+)
 
 require (
 	dario.cat/mergo v1.0.2 // indirect
