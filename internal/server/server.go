@@ -27,7 +27,7 @@ func newTemplate() *Templates {
 	}
 }
 
-var validPages []string = []string{"/addexercise"}
+var validPages []string = []string{"/addexercise", "/addworkout"}
 
 func StartServer() {
 	fmt.Println("Entering start server")
@@ -57,6 +57,7 @@ func htmlTemplateHandler(w http.ResponseWriter, r *http.Request) {
 	if slices.Contains(validPages, r.URL.Path) {
 		data.Page = r.URL.Path
 		renderer.Render(w, "index", data)
+		//renderer.Render(w, "index_body", data)
 	} else {
 		data.Page = "error"
 		fmt.Println("Error Page")
@@ -80,7 +81,7 @@ func htmxHandler(w http.ResponseWriter, r *http.Request) {
 func SendError(w http.ResponseWriter, r *http.Request, statusCode int, err string) {
 	w.WriteHeader(statusCode)
 	data := structapi.Data{Errors: []string{err}, Page: "error"}
-	newTemplate().Render(w, "index", data)
+	newTemplate().Render(w, "error_section", data)
 	log.Println("Respondede")
 }
 

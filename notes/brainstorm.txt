@@ -16,3 +16,6 @@ Active Actions
     Specify the associated planned workout
   Record sets & weight for each workout
 
+
+Add workout
+  Exercise: Select(name) weight #reps button[remove] button[duplicate]
