@@ -4,3 +4,5 @@ tmp
 */*/.null*
 bin
 data
+data/*
+*/data.db

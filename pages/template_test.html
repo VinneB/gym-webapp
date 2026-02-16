@@ -307,37 +307,69 @@
   </div>
 {{ end }}
 
-{{ block "add_workout_page" }}
+{{ block "add_workout_page" . }}
   <h2>Add Workout Page</h2>
-  
+  {{ template "add_workout_form" . }} 
+  {{ template "add_workout_script" . }}
+{{ end }}
+
+{{ block "add_workout_form" .}}
+  <div id="add_workout_form_div" class="container">
+        <h2>Workout Form</h2>
+        <form id="workoutForm" hx-post="/htmx/workouts" hx-target="#add_workout_form_div" method="POST">
+            <!-- Dynamic Inputs for Exercise Details (Dropdown Name and Value) -->
+            <div id="workoutDetails" class="form-group">
+                <br />
+                <label for="workout-start-time">Workout Start Time</label>
+                <input type="datetime-local" min="2026-01-01T00:00" value="2026-01-01T00:00" name="workout-start-time" id="workout-start-time"/> 
+                <br />
+                <label for="workout-end-time">Workout End Time</label>
+                <input type="datetime-local" min="2026-01-01T00:00" value="2026-01-01T00:00" name="workout-end-time" id="workout-end-time"/> 
+                <br />
+                <br />
+                <h3>Exercises</h3>
+                <!-- The first exercise detail will be added dynamically by JavaScript -->
+            </div>
+            <!-- Add Button -->
+            <button type="button" id="addInputBtn" class="add-btn">+ Add Set</button>
+            <br><br>
+            <button type="submit" class="add-btn">Submit</button>
+        </form>
+    </div>
+    <script>
+        // Handle adding new inputs when the add button is clicked
+        document.getElementById("addInputBtn").addEventListener("click", function() {
+            createWorkoutInput(); // Call to create a new set of inputs dynamically
+        });
+    </script>
 {{ end }}
 
 {{ block "add_workout_script" .}}
 <script>
         // Static list of detail names for the dropdown
-        const detailNames = [{{ range .Muscles }} '{{ . }}', {{ end }}];
+        const detailNames = [{{ range .Exercises }} '{{ .Name }}', {{ end }}];
 
         // Function to create a new exercise input set (dropdown and input)
-        function createExerciseInput() {
-            const exerciseDetails = document.getElementById("exerciseDetails");
+        function createWorkoutInput() {
+            const workoutDetails = document.getElementById("workoutDetails");
             const newInputGroup = document.createElement("div");
             newInputGroup.classList.add("exercise-inputs");
 
             // Create a label for the select field (Detail Name)
             const newNameLabel = document.createElement("label");
-            newNameLabel.textContent = "Detail Name";
-            newNameLabel.setAttribute("for", "muscleName");
+            newNameLabel.textContent = "Exercise";
+            newNameLabel.setAttribute("for", "exerciseName");
 
             // Create new select element with static options
             const newNameSelect = document.createElement("select");
-            newNameSelect.setAttribute("name", "muscleName");
-            newNameSelect.setAttribute("id", "muscleName");
+            newNameSelect.setAttribute("name", "exerciseName");
+            newNameSelect.setAttribute("id", "exerciseName");
             newNameSelect.required = true;
 
             // Add default "Select Detail" option
             const defaultOption = document.createElement("option");
             defaultOption.value = "";
-            defaultOption.textContent = "Select Detail";
+            defaultOption.textContent = "Select Exercise";
             newNameSelect.appendChild(defaultOption);
 
             // Add static options to the select dropdown (no randomness)
@@ -348,22 +380,87 @@
                 newNameSelect.appendChild(option);
             }
 
-            // Create a label for the input field (Detail Value)
-            const newValueLabel = document.createElement("label");
-            newValueLabel.textContent = "Detail Value";
-            newValueLabel.setAttribute("for", "muscleDetail");
+            // Rep Field
 
-            // Create a new input field for the value (float)
-            const newValueInput = document.createElement("input");
-            newValueInput.setAttribute("type", "number");
-            newValueInput.setAttribute("name", "muscleDetail");
-            newValueInput.setAttribute("id", "muscleDetail");
-            newValueInput.setAttribute("value", "1");
-            newValueInput.setAttribute("min", "0.1");
-            newValueInput.setAttribute("max", "1");
-            newValueInput.setAttribute("placeholder", "Value (float)");
-            newValueInput.setAttribute("step", "0.1");
-            newValueInput.required = true;
+            const newRepLabel = document.createElement("label");
+            newRepLabel.textContent = "Reps";
+            newRepLabel.setAttribute("for", "repCount");
+
+            const newRepInput = document.createElement("input");
+            newRepInput.setAttribute("type", "number");
+            newRepInput.setAttribute("name", "repAmount");
+            newRepInput.setAttribute("id", "repAmount");
+            newRepInput.setAttribute("value", "1");
+            newRepInput.setAttribute("min", "1");
+            newRepInput.setAttribute("max", "99");
+            newRepInput.setAttribute("placeholder", "# Reps");
+            newRepInput.setAttribute("step", "1");
+            newRepInput.required = true;
+
+            // Weight Field
+
+            const newWeightLabel = document.createElement("label");
+            newWeightLabel.textContent = "Weight";
+            newWeightLabel.setAttribute("for", "weightAmount");
+
+            const newWeightInput = document.createElement("input");
+            newWeightInput.setAttribute("type", "number");
+            newWeightInput.setAttribute("name", "weightAmount");
+            newWeightInput.setAttribute("id", "weightAmount");
+            newWeightInput.setAttribute("value", "1");
+            newWeightInput.setAttribute("min", "1");
+            newWeightInput.setAttribute("max", "999");
+            newWeightInput.setAttribute("placeholder", "Weight");
+            newWeightInput.setAttribute("step", "0.05");
+            newWeightInput.required = true;
+
+            // Partial Reps
+
+            const newPartialRepLabel = document.createElement("label");
+            newPartialRepLabel.textContent = "Partial Reps";
+            newPartialRepLabel.setAttribute("for", "partialRepAmount");
+
+            const newPartialRepInput = document.createElement("input");
+            newPartialRepInput.setAttribute("type", "number");
+            newPartialRepInput.setAttribute("name", "partialRepAmount");
+            newPartialRepInput.setAttribute("id", "partialRepAmount");
+            newPartialRepInput.setAttribute("value", "1");
+            newPartialRepInput.setAttribute("min", "1");
+            newPartialRepInput.setAttribute("max", "999");
+            newPartialRepInput.setAttribute("placeholder", "# Partial Reps");
+            newPartialRepInput.setAttribute("step", "1");
+            newPartialRepInput.required = true;
+
+            // Number of Sets
+
+            const newSetCountLabel = document.createElement("label");
+            newSetCountLabel.textContent = "Number of Sets";
+            newSetCountLabel.setAttribute("for", "setAmount");
+
+            const newSetCountInput = document.createElement("input");
+            newSetCountInput.setAttribute("type", "number");
+            newSetCountInput.setAttribute("name", "setAmount");
+            newSetCountInput.setAttribute("id", "setAmount");
+            newSetCountInput.setAttribute("value", "1");
+            newSetCountInput.setAttribute("min", "1");
+            newSetCountInput.setAttribute("max", "999");
+            newSetCountInput.setAttribute("placeholder", "# Sets");
+            newSetCountInput.setAttribute("step", "1");
+            newSetCountInput.required = true;
+
+            // Workout Start time
+
+            const newTimeLabel = document.createElement("label");
+            newTimeLabel.textContent = "Start Time";
+            newTimeLabel.setAttribute("for", "startTime");
+
+            const newTimeInput = document.createElement("input");
+            newTimeInput.setAttribute("type", "datetime-local");
+            newTimeInput.setAttribute("min", "2026-01-01T00:00");
+            newTimeInput.setAttribute("value", "2026-01-01T00:00");
+            newTimeInput.setAttribute("name", "startTime");
+            newTimeInput.setAttribute("id", "startTime");
+            newTimeInput.required = true;
 
             // Create a remove button
             const removeButton = document.createElement("button");
@@ -379,17 +476,26 @@
             // Append the labels, select, input fields, and remove button to the new group
             newInputGroup.appendChild(newNameLabel);
             newInputGroup.appendChild(newNameSelect);
-            newInputGroup.appendChild(newValueLabel);
-            newInputGroup.appendChild(newValueInput);
+            newInputGroup.appendChild(newTimeLabel);
+            newInputGroup.appendChild(newTimeInput);
+            newInputGroup.appendChild(newWeightLabel);
+            newInputGroup.appendChild(newWeightInput);
+            newInputGroup.appendChild(newRepLabel);
+            newInputGroup.appendChild(newRepInput);
+            newInputGroup.appendChild(newPartialRepLabel);
+            newInputGroup.appendChild(newPartialRepInput);
+            newInputGroup.appendChild(newSetCountLabel);
+            newInputGroup.appendChild(newSetCountInput);
+
             newInputGroup.appendChild(removeButton);
 
             // Add the new group of inputs to the exerciseDetails container
-            exerciseDetails.appendChild(newInputGroup);
+            workoutDetails.appendChild(newInputGroup);
         }
 
         // Create the first exercise input on page load
         window.onload = function() {
-            createExerciseInput(); // Call to create the first exercise input
+            createWorkoutInput(); // Call to create the first exercise input
         };
     </script>
 {{ end }}

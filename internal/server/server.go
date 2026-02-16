@@ -35,6 +35,8 @@ func StartServer() {
 	mux.HandleFunc("/", htmlTemplateHandler)
 	mux.HandleFunc("GET /htmx/exercises", ExercisesGetHandler)
 	mux.HandleFunc("POST /htmx/exercises", ExercisesPostHandler)
+	mux.HandleFunc("GET /htmx/workouts", WorkoutsGetHandler)
+	mux.HandleFunc("POST /htmx/workouts", WorkoutsPostHandler)
 	mux.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "test/favicon.ico")
 	})
@@ -57,7 +59,7 @@ func htmlTemplateHandler(w http.ResponseWriter, r *http.Request) {
 	if slices.Contains(validPages, r.URL.Path) {
 		data.Page = r.URL.Path
 		renderer.Render(w, "index", data)
-		//renderer.Render(w, "index_body", data)
+		// renderer.Render(w, "index_body", data)
 	} else {
 		data.Page = "error"
 		fmt.Println("Error Page")
@@ -74,7 +76,6 @@ func htmxHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("htmx endpoint - %s\n", endpoint)
 	switch endpoint {
 	case "exercises":
-
 	}
 }
 
@@ -89,18 +90,27 @@ func getData(path string) (structapi.Data, error) {
 	data := structapi.Data{}
 	data.Page = path
 	data.Muscles = structapi.Muscles
-	if path == "/addexercise" {
+	switch path {
+	case "/addexercise":
 		exercises, err := sql.GetExercises()
 		if err != nil {
 			return structapi.Data{}, err
 		}
 		data.Exercises = exercises
-	} else if path == "/htmx/exercises" {
+	case "/htmx/exercises":
 		exercises, err := sql.GetExercises()
 		if err != nil {
 			return structapi.Data{}, err
 		}
 		data.Exercises = exercises
+	case "/addworkout":
+		exercises, err := sql.GetExercises()
+		if err != nil {
+			return structapi.Data{}, err
+		}
+		data.Exercises = exercises
+	default:
 	}
+
 	return data, nil
 }

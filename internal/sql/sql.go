@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strconv"
 
 	"github.com/VinneB/gym-webapp/internal/structapi"
 	"github.com/jmoiron/sqlx"
@@ -14,19 +15,26 @@ var addExerciseText string = `INSERT INTO exercises (name, data) VALUES (:name, 
 
 var addWorkoutText string = `INSERT INTO workouts (user_email, start_time, end_time) VALUES (:user_email, :start_time, :end_time);`
 
+var addSetText string = `INSERT INTO sets (exercise_name, reps, partial_reps, weight, workout_id, time, type, user_email) VALUES (:exercise_name, :reps, :partial_reps, :weight, :workout_id, :time, :type, :user_email)`
+
 var getUserWorkoutsText string = `SELECT id FROM workouts WHERE user_email=?;`
 
 var getAllExercisesText string = `SELECT * FROM exercises;`
 
-var rootPathDB string = "data/"
-var dataPathDB string = rootPathDB + "data.db"
+var (
+	rootPathDB string = "data/"
+	dataPathDB string = rootPathDB + "data.db"
+)
 
 var db *sqlx.DB
 
-var addExerciseStmt *sqlx.NamedStmt
-var addWorkoutStmt *sqlx.NamedStmt
-var getAllUserWorkoutsStmt *sqlx.Stmt
-var getAllExercisesStmt *sqlx.Stmt
+var (
+	addExerciseStmt        *sqlx.NamedStmt
+	addWorkoutStmt         *sqlx.NamedStmt
+	addSetStmt             *sqlx.NamedStmt
+	getAllUserWorkoutsStmt *sqlx.Stmt
+	getAllExercisesStmt    *sqlx.Stmt
+)
 
 func Connect() error {
 	temp_db, err := sqlx.Connect("sqlite", dataPathDB)
@@ -45,6 +53,11 @@ func Connect() error {
 		log.Println(err)
 		return err
 	}
+	temp_addSetStmt, err := db.PrepareNamed(addSetText)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
 	temp_getUserWorkoutsStmt, err := db.Preparex(getUserWorkoutsText)
 	if err != nil {
 		log.Println(err)
@@ -59,6 +72,7 @@ func Connect() error {
 	addWorkoutStmt = temp_addWorkoutStmt
 	getAllUserWorkoutsStmt = temp_getUserWorkoutsStmt
 	getAllExercisesStmt = temp_getAllExercisesStmt
+	addSetStmt = temp_addSetStmt
 	log.Println("Connected to sqlite3 database")
 	return nil
 }
@@ -92,6 +106,15 @@ func dep_AddExercise(exercise structapi.Exercise) error {
 	return nil
 }
 
+func AddSet(exercise structapi.Set) error {
+	_, err := addSetStmt.Exec(exercise)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	return nil
+}
+
 func AddExercise(exercise structapi.Exercise) error {
 	sqlExercise := structapi.ExerciseSqlForm{}
 	sqlExercise.Name = exercise.Name
@@ -104,7 +127,6 @@ func AddExercise(exercise structapi.Exercise) error {
 	_, err = addExerciseStmt.Exec(&sqlExercise)
 	if err != nil {
 		log.Println(err)
-		log.Println("ya")
 		return err
 	}
 	return nil
@@ -130,14 +152,21 @@ func dep_AddWorkoutInstance(workout structapi.WorkoutInstance, user_email string
 	return nil
 }
 
-func AddWorkoutInstance(workout structapi.WorkoutInstance, user_email string) error {
-	_, err := addWorkoutStmt.Exec(workout)
+func AddWorkoutInstance(workout structapi.WorkoutInstance) (int64, error) {
+	result, err := addWorkoutStmt.Exec(workout)
 	if err != nil {
 		log.Println(err)
-		return err
+		return -1, err
 	}
-	return nil
+	id, err := result.LastInsertId()
+	if err != nil {
+		log.Println(err)
+		return -1, err
+	}
+	log.Println("id = " + strconv.Itoa(int(id)))
+	return id, nil
 }
+
 func GetAllUserWorkouts(email string) ([]structapi.WorkoutInstance, error) {
 	workouts := []structapi.WorkoutInstance{}
 	err := getAllUserWorkoutsStmt.Select(workouts, email)
