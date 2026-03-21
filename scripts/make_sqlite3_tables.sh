@@ -15,8 +15,8 @@ CREATE TABLE IF NOT EXISTS users (
 
 CREATE TABLE IF NOT EXISTS workouts (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    start_time INTEGER NOT NULL,
-    end_time INTEGER,
+    start_time DATETIME NOT NULL,
+    end_time DATETIME,
     user_email TEXT NOT NULL
 );
 
@@ -30,11 +30,18 @@ CREATE TABLE IF NOT EXISTS sets (
   exercise_name TEXT NOT NULL,
   reps INTEGER NOT NULL,
   partial_reps INTEGER NOT NULL,
-  weight INTEGER,
+  weight REAL,
   workout_id INTEGER NOT NULL,
-  time TEXT,
+  time DATETIME,
   type TEXT,
   user_email TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS plan_workouts (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  user_email TEXT NOT NULL,
+  data TEXT NOT NULL
 );
 
 "

@@ -1,0 +1,598 @@
+{{ block "index" . }}
+<!DOCTYPE html>
+<html lang="en" id="page">
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js" integrity="sha384-/TgkGk7p307TH7EXJDuUlgG3Ce1UVolAOFopFekQkkXihi5u/6OCvVKyz1W+idaz" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <meta charset="UTF-8">
+    {{ if eq .Page "/addexercise" }}
+      <title>Add Exercise</title>
+    {{ else if eq .Page "/addworkout"}}
+      <title>Add Workout</title>
+    {{ end }}
+</head>
+    {{ template "index_body" . }}
+</html>
+{{ end }}
+
+{{block "index_body" . }}
+<body>
+  {{ template "header_bar" }}
+  {{ template "error_section" .}}
+  <div id="main">
+  {{ if eq .Page "/addexercise" }}
+    {{ template "add_exercise_page" .}}
+  {{ else if eq .Page "/addworkout" }}
+    {{ template "add_workout_page" . }}
+  {{ else if eq .Page "/graph"}}
+    {{ template "graph_page" . }}
+  {{ else if eq .Page "error" }}
+    {{ template "error_page" .}}
+  {{ end }}
+  </div>
+  <script>
+  document.addEventListener("DOMContentLoaded", (event) => {
+    document.body.addEventListener("htmx:beforeSwap", function(evt) {
+      if (evt.detail.xhr.status === 409 || evt.detail.xhr.status === 422) {
+        evt.detail.shouldSwap = true;
+        evt.detail.isError = false;
+      }
+    });
+    document.body.addEventListener("htmx:afterSwap", function(evt) {
+      if (evt.target.id === "add_exercise_form_div") {
+        createExerciseInput() 
+      }
+      if (evt.target.id === "add_workout_form_div") {
+        createWorkoutInput() 
+      }
+    });
+  })
+  </script>
+</body>
+{{ end }}
+
+<!-- Generic Elements -->
+
+{{ block "error_section" . }}
+  <div id="error-section">
+  {{ range .Errors }}<p style="color: red">{{ . }}</p>{{ end }}
+  </div>
+{{ end }}
+
+<!-- Add Exercise Page -->
+{{ block "add_exercise_page" . }}
+  <h1>Add A Exercise Page</h1>
+  {{ template "add_exercise_form" . }}
+  {{ if .Exercises }}
+    {{ template "add_exercise_list" . }}
+  {{ else }}
+    <p>No exercises found</p>
+  {{ end }}
+  {{ template "add_exercise_script" .}}
+{{ end }}
+
+{{ block "add_exercise_form" .}}
+    <div id="add_exercise_form_div" class="container">
+        <h2>Exercise Form</h2>
+        <form id="exerciseForm" hx-post="/htmx/exercises" hx-target="#add_exercise_form_div" method="POST">
+            <!-- Exercise Name -->
+            <div class="form-group">
+                <label for="exerciseName">Exercise Name</label>
+                <input type="text" id="exerciseName" name="exerciseName" required placeholder="Enter exercise name">
+            </div>
+            <!-- Dynamic Inputs for Exercise Details (Dropdown Name and Value) -->
+            <div id="exerciseDetails" class="form-group">
+                <label>Exercise Details</label>
+                <!-- The first exercise detail will be added dynamically by JavaScript -->
+            </div>
+            <!-- Add Button -->
+            <button type="button" id="addInputBtn" class="add-btn">+ Add Detail</button>
+            <br><br>
+            <button type="submit" class="add-btn">Submit</button>
+        </form>
+    </div>
+    <script>
+        // Handle adding new inputs when the add button is clicked
+        document.getElementById("addInputBtn").addEventListener("click", function() {
+            createExerciseInput(); // Call to create a new set of inputs dynamically
+        });
+    </script>
+  <!---
+  <form hx-post="/htmx/exercises" id="add exercise">
+    name: <input type="text" name="name" />
+    primary muscle: <input type="text" name="muscle" />
+    <button type="submit">Add</button>
+  </form>
+-->
+{{ end }}
+
+{{ block "add_exercise_list" . }}
+  <div id="exercise-list" hx-swap-oob="true">
+  <h2>Current Exercises</h2>
+  {{range .Exercises}}
+    {{ template "exercise" . }}
+  {{ end }}
+  </div>
+{{ end }}
+
+{{ block "exercise" . }}
+  <div class="exercise-list-item">
+    <p>{{ .Name }}</p>
+    <ul>
+      {{ range .MuscleFractions }}
+        <li>{{ .Name }}: {{ .Fraction }}</li>
+      {{ end }}
+    </ul>
+  </div>
+{{ end }}
+
+{{ block "add_exercise_script" .}}
+  <script>
+        // Static list of detail names for the dropdown
+        const detailNames = [{{ range .Muscles }} '{{ . }}', {{ end }}];
+
+        // Function to create a new exercise input set (dropdown and input)
+        function createExerciseInput() {
+            const exerciseDetails = document.getElementById("exerciseDetails");
+            const newInputGroup = document.createElement("div");
+            newInputGroup.classList.add("exercise-inputs");
+
+            // Create a label for the select field (Detail Name)
+            const newNameLabel = document.createElement("label");
+            newNameLabel.textContent = "Detail Name";
+            newNameLabel.setAttribute("for", "muscleName");
+
+            // Create new select element with static options
+            const newNameSelect = document.createElement("select");
+            newNameSelect.setAttribute("name", "muscleName");
+            newNameSelect.setAttribute("id", "muscleName");
+            newNameSelect.required = true;
+
+            // Add default "Select Detail" option
+            const defaultOption = document.createElement("option");
+            defaultOption.value = "";
+            defaultOption.textContent = "Select Detail";
+            newNameSelect.appendChild(defaultOption);
+
+            // Add static options to the select dropdown (no randomness)
+            for (let i = 0; i < detailNames.length; i++) {
+                const option = document.createElement("option");
+                option.value = detailNames[i];
+                option.textContent = detailNames[i];
+                newNameSelect.appendChild(option);
+            }
+
+            // Create a label for the input field (Detail Value)
+            const newValueLabel = document.createElement("label");
+            newValueLabel.textContent = "Detail Value";
+            newValueLabel.setAttribute("for", "muscleDetail");
+
+            // Create a new input field for the value (float)
+            const newValueInput = document.createElement("input");
+            newValueInput.setAttribute("type", "number");
+            newValueInput.setAttribute("name", "muscleDetail");
+            newValueInput.setAttribute("id", "muscleDetail");
+            newValueInput.setAttribute("value", "1");
+            newValueInput.setAttribute("min", "0.1");
+            newValueInput.setAttribute("max", "1");
+            newValueInput.setAttribute("placeholder", "Value (float)");
+            newValueInput.setAttribute("step", "0.1");
+            newValueInput.required = true;
+
+            // Create a remove button
+            const removeButton = document.createElement("button");
+            removeButton.type = "button";
+            removeButton.textContent = "Remove";
+            removeButton.classList.add("remove-btn");
+
+            // Add remove functionality
+            removeButton.addEventListener("click", function() {
+                newInputGroup.remove();
+            });
+
+            // Append the labels, select, input fields, and remove button to the new group
+            newInputGroup.appendChild(newNameLabel);
+            newInputGroup.appendChild(newNameSelect);
+            newInputGroup.appendChild(newValueLabel);
+            newInputGroup.appendChild(newValueInput);
+            newInputGroup.appendChild(removeButton);
+
+            // Add the new group of inputs to the exerciseDetails container
+            exerciseDetails.appendChild(newInputGroup);
+        }
+
+        // Create the first exercise input on page load
+        window.onload = function() {
+            createExerciseInput(); // Call to create the first exercise input
+        };
+    </script>
+{{ end }}
+
+<!-- Error -->
+
+{{block "error_page" .}}
+    <script type="text/javascript">
+      var canvas = document.createElement('canvas');
+      var height = canvas.height = window.innerHeight;
+      var width = canvas.width = window.innerWidth;
+      var ctx = canvas.getContext('2d');
+      document.body.appendChild(canvas);
+
+      function random(min,max)
+      {
+          return Math.random()*(max-min+1)+min;
+      }
+
+      function range_map(value,in_min, in_max, out_min, out_max) {
+        return (value - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+      }
+
+      var word_arr = [];
+      var txt_min_size = 5;
+      var txt_max_size = 25;
+      var keypress = false;
+      var acclerate = 2;
+      for (var i = 0; i < 25; i++) {
+        word_arr.push({
+          x : random(0,width),
+          y : random(0,height),
+          text : '404',
+          size : random(txt_min_size,txt_max_size)
+        });
+
+        word_arr.push({
+          x : random(0,width),
+          y : random(0,height),
+          text : 'page',
+          size : random(txt_min_size,txt_max_size)
+        });
+
+
+        word_arr.push({
+          x : random(0,width),
+          y : random(0,height),
+          text : 'not found',
+          size : random(txt_min_size,txt_max_size)
+        });
+
+        word_arr.push({
+          x : random(0,width),
+          y : random(0,height),
+          text : '404',
+          size : Math.floor(random(txt_min_size,txt_max_size))
+        });
+      }
+
+      function render()
+      {
+        ctx.fillStyle = "rgba(0,0,0,1)";
+        ctx.fillRect(0,0,width,height);
+
+        ctx.fillStyle = "#fff";
+        for (var i = 0; i < word_arr.length; i++) {
+          ctx.font = word_arr[i].size+"px sans-serif";
+          var w = ctx.measureText(word_arr[i].text);
+          ctx.fillText(word_arr[i].text,word_arr[i].x,word_arr[i].y);
+
+          if(keypress)
+          {
+            word_arr[i].x += range_map(word_arr[i].size,txt_min_size,txt_max_size,2,4) * acclerate;
+          }
+          else {
+            word_arr[i].x += range_map(word_arr[i].size,txt_min_size,txt_max_size,2,3);
+          }
+
+          if(word_arr[i].x >= width)
+          {
+            word_arr[i].x = -w.width*2;
+            word_arr[i].y = random(0,height);
+            word_arr[i].size =  Math.floor(random(txt_min_size,txt_max_size));
+
+          }
+        }
+
+        ctx.fill();
+
+        requestAnimationFrame(render);
+      }
+
+      render();
+
+      window.addEventListener('keydown',function(){
+        keypress = true;
+      },true);
+      window.addEventListener('keyup',function(){
+        keypress = false;
+      },true);
+    </script>
+{{ end }}
+
+
+{{ block "header_bar" . }}
+  <div id="header-bar">
+    <a href="/addworkout">Workout</a>
+    <a href="/addexercise">Exercise</a>
+    <a href="/graph">Graph</a>
+  </div>
+{{ end }}
+
+{{ block "add_workout_page" . }}
+  <h2>Add Workout Page</h2>
+  {{ template "add_workout_form" . }} 
+  {{ template "add_workout_script" . }}
+{{ end }}
+
+{{ block "add_workout_form" .}}
+  <div id="add_workout_form_div" class="container">
+        <h2>Workout Form</h2>
+        <form id="workoutForm" hx-post="/htmx/workouts" hx-target="#add_workout_form_div" hx-swap="outerHTML" method="POST">
+            <!-- Dynamic Inputs for Exercise Details (Dropdown Name and Value) -->
+            <div id="workoutDetails" class="form-group">
+                <br />
+                <label for="workout-start-time">Workout Start Time</label>
+                <input type="datetime-local" min="2026-01-01T00:00" value="2026-01-01T00:00" name="workout-start-time" id="workout-start-time"/> 
+                <br />
+                <label for="workout-end-time">Workout End Time</label>
+                <input type="datetime-local" min="2026-01-01T00:00" value="2026-01-01T00:00" name="workout-end-time" id="workout-end-time"/> 
+                <br />
+                <br />
+                <h3>Exercises</h3>
+                <!-- The first exercise detail will be added dynamically by JavaScript -->
+            </div>
+            <!-- Add Button -->
+            <button type="button" id="addInputBtn" class="add-btn">+ Add Set</button>
+            <br><br>
+            <button type="submit" class="add-btn">Submit</button>
+        </form>
+    </div>
+    <script>
+        // Handle adding new inputs when the add button is clicked
+        document.getElementById("addInputBtn").addEventListener("click", function() {
+            createWorkoutInput(); // Call to create a new set of inputs dynamically
+        });
+    </script>
+{{ end }}
+
+{{ block "add_workout_script" .}}
+<script>
+        // Static list of detail names for the dropdown
+        const detailNames = [{{ range .Exercises }} '{{ .Name }}', {{ end }}];
+
+        // Function to create a new exercise input set (dropdown and input)
+        function createWorkoutInput() {
+            const workoutDetails = document.getElementById("workoutDetails");
+            const newInputGroup = document.createElement("div");
+            newInputGroup.classList.add("exercise-inputs");
+
+            // Create a label for the select field (Detail Name)
+            const newNameLabel = document.createElement("label");
+            newNameLabel.textContent = "Exercise";
+            newNameLabel.setAttribute("for", "exerciseName");
+
+            // Create new select element with static options
+            const newNameSelect = document.createElement("select");
+            newNameSelect.setAttribute("name", "exerciseName");
+            newNameSelect.setAttribute("id", "exerciseName");
+            newNameSelect.required = true;
+
+            // Add default "Select Detail" option
+            const defaultOption = document.createElement("option");
+            defaultOption.value = "";
+            defaultOption.textContent = "Select Exercise";
+            newNameSelect.appendChild(defaultOption);
+
+            // Add static options to the select dropdown (no randomness)
+            for (let i = 0; i < detailNames.length; i++) {
+                const option = document.createElement("option");
+                option.value = detailNames[i];
+                option.textContent = detailNames[i];
+                newNameSelect.appendChild(option);
+            }
+
+            // Rep Field
+
+            const newRepLabel = document.createElement("label");
+            newRepLabel.textContent = "Reps";
+            newRepLabel.setAttribute("for", "repCount");
+
+            const newRepInput = document.createElement("input");
+            newRepInput.setAttribute("type", "number");
+            newRepInput.setAttribute("name", "repAmount");
+            newRepInput.setAttribute("id", "repAmount");
+            newRepInput.setAttribute("value", "1");
+            newRepInput.setAttribute("min", "1");
+            newRepInput.setAttribute("max", "99");
+            newRepInput.setAttribute("placeholder", "# Reps");
+            newRepInput.setAttribute("step", "1");
+            newRepInput.required = true;
+
+            // Weight Field
+
+            const newWeightLabel = document.createElement("label");
+            newWeightLabel.textContent = "Weight";
+            newWeightLabel.setAttribute("for", "weightAmount");
+
+            const newWeightInput = document.createElement("input");
+            newWeightInput.setAttribute("type", "number");
+            newWeightInput.setAttribute("name", "weightAmount");
+            newWeightInput.setAttribute("id", "weightAmount");
+            newWeightInput.setAttribute("value", "1");
+            newWeightInput.setAttribute("min", "1");
+            newWeightInput.setAttribute("max", "999");
+            newWeightInput.setAttribute("placeholder", "Weight");
+            newWeightInput.setAttribute("step", "0.05");
+            newWeightInput.required = true;
+
+            // Partial Reps
+
+            const newPartialRepLabel = document.createElement("label");
+            newPartialRepLabel.textContent = "Partial Reps";
+            newPartialRepLabel.setAttribute("for", "partialRepAmount");
+
+            const newPartialRepInput = document.createElement("input");
+            newPartialRepInput.setAttribute("type", "number");
+            newPartialRepInput.setAttribute("name", "partialRepAmount");
+            newPartialRepInput.setAttribute("id", "partialRepAmount");
+            newPartialRepInput.setAttribute("value", "1");
+            newPartialRepInput.setAttribute("min", "1");
+            newPartialRepInput.setAttribute("max", "999");
+            newPartialRepInput.setAttribute("placeholder", "# Partial Reps");
+            newPartialRepInput.setAttribute("step", "1");
+            newPartialRepInput.required = true;
+
+            // Number of Sets
+
+            const newSetCountLabel = document.createElement("label");
+            newSetCountLabel.textContent = "Number of Sets";
+            newSetCountLabel.setAttribute("for", "setAmount");
+
+            const newSetCountInput = document.createElement("input");
+            newSetCountInput.setAttribute("type", "number");
+            newSetCountInput.setAttribute("name", "setAmount");
+            newSetCountInput.setAttribute("id", "setAmount");
+            newSetCountInput.setAttribute("value", "1");
+            newSetCountInput.setAttribute("min", "1");
+            newSetCountInput.setAttribute("max", "999");
+            newSetCountInput.setAttribute("placeholder", "# Sets");
+            newSetCountInput.setAttribute("step", "1");
+            newSetCountInput.required = true;
+
+            // Workout Start time
+
+            const newTimeLabel = document.createElement("label");
+            newTimeLabel.textContent = "Start Time";
+            newTimeLabel.setAttribute("for", "startTime");
+
+            const newTimeInput = document.createElement("input");
+            newTimeInput.setAttribute("type", "datetime-local");
+            newTimeInput.setAttribute("min", "2026-01-01T00:00");
+            newTimeInput.setAttribute("value", "2026-01-01T00:00");
+            newTimeInput.setAttribute("name", "startTime");
+            newTimeInput.setAttribute("id", "startTime");
+            newTimeInput.required = true;
+
+            // Create a remove button
+            const removeButton = document.createElement("button");
+            removeButton.type = "button";
+            removeButton.textContent = "Remove";
+            removeButton.classList.add("remove-btn");
+
+            // Add remove functionality
+            removeButton.addEventListener("click", function() {
+                newInputGroup.remove();
+            });
+
+            // Append the labels, select, input fields, and remove button to the new group
+            newInputGroup.appendChild(newNameLabel);
+            newInputGroup.appendChild(newNameSelect);
+            newInputGroup.appendChild(newTimeLabel);
+            newInputGroup.appendChild(newTimeInput);
+            newInputGroup.appendChild(newWeightLabel);
+            newInputGroup.appendChild(newWeightInput);
+            newInputGroup.appendChild(newRepLabel);
+            newInputGroup.appendChild(newRepInput);
+            newInputGroup.appendChild(newPartialRepLabel);
+            newInputGroup.appendChild(newPartialRepInput);
+            newInputGroup.appendChild(newSetCountLabel);
+            newInputGroup.appendChild(newSetCountInput);
+
+            newInputGroup.appendChild(removeButton);
+
+            // Add the new group of inputs to the exerciseDetails container
+            workoutDetails.appendChild(newInputGroup);
+        }
+
+        // Create the first exercise input on page load
+        window.onload = function() {
+            createWorkoutInput(); // Call to create the first exercise input
+        };
+    </script>
+{{ end }}
+
+
+
+{{ block "graph_page" . }}
+  <div id="graph_page_div" >
+    {{ template "graph_dataset_list" . }}
+    <p>test</p>
+  </div>
+{{ end }}
+<!--
+
+  <div "graph_page_div" >
+    {{ template "graph_dataset_list" . }}
+    <p>test</p>
+    <select name="exercise-name">
+      <option value="test1">test1</option>
+      <option value="test2">test2</option>
+    </select>
+    <br/>
+    <br/>
+    <br/>
+    <br/>
+    <div class="chart-container">
+      <canvas id="chart"></canvas>
+    </div>
+    <script>
+      let chart = document.getElementById('chart').getContext('2d');
+      let chartData = new Chart(chart, {
+        type:'line',
+        data:{
+          labels:[{{ range .ChartXLabels }}'{{ . }}', {{ end }}],
+          datasets:[
+            {{ range .ChartDataSets }}
+            {
+              label:{{ .Label }},
+              data:[{{ range .Points }}{{ .Data }},{{ end }}],
+              pointBackgroundColor: '#FF0000',
+            },
+            {{ end }}
+            ],
+        },
+        options: {},
+      });
+    </script>
+  </div>
+-->
+  <!--<script>
+    let chart = document.getElementById('chart').getContext('2d');
+    let chartData = new Chart(chart, {
+      type:'line',
+      data:{
+        labels:['testlabel1', 'testlabel2'],
+        datasets:[{
+          label:'testdatasetlabel',
+          data:[1,2,3]
+        },
+        {
+          label:'testdatasetlabel2',
+          data:[4,5,6]
+        }],
+      },
+      options: {},
+    });
+  </script>
+  -->
+
+{{ block "graph_dataset_list" . }}
+  <div id="graph_dataset_list_div">
+    <h3>DataSets</h3>
+    {{ range .ChartDataSets }}
+    <div id="dataset_list_item_{{.CalcType}}_{{.Label}}">
+      <p>
+      {{.CalcType}}: {{ .Label }}
+      <button type="button" hx-delete="/htmx/graphs" hx-include="#graph_dataset_list_div div:not(#dataset_list_item_{{.CalcType}}_{{.Label}})">Remove</button>
+      </p>
+      <input type="hidden" name="CalcType" value="{{.CalcType}}">
+      <input type="hidden" name="Label" value="{{.Label}}">
+    </div>
+    {{ end }}
+    <div id="add_new_dataset">
+      <select>
+        {{ range .CalcTypes }}
+
+        {{ end }}
+      </select>   
+    </div>
+  </div>
+{{ end }}

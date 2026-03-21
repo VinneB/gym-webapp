@@ -5,15 +5,15 @@
   <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js" integrity="sha384-/TgkGk7p307TH7EXJDuUlgG3Ce1UVolAOFopFekQkkXihi5u/6OCvVKyz1W+idaz" crossorigin="anonymous"></script>
   <!--<script src="https://cdn.jsdelivr.net/npm/chart.js"></script> -->
   <script type="module" src="/static/js/app.js" defer></script>
-  <link href="/static/css/main-tailwind.css" rel="stylesheet">
+  <link href="/static/css/output.css" rel="stylesheet">
     <meta charset="UTF-8">
     <title>{{ .Title }}</title>
 </head>
-<body hx-boost="true" hx-target="#main" class="pt-16 bg-secondarydark">
+<body hx-boost="true" hx-target="#main">
   {{ template "header_bar" . }}
-  <main id="main" class="flex justify-center font-sans">
+  <div id="main">
     {{ renderTemplate .ContentTemplate . }}
-  </main>
+  </div>
 </body>
 </html>
 {{ end }}
@@ -30,7 +30,7 @@
 
 {{ define "addexercise_page" }}
   <div id="addexercise_div">
-    <h1 class="font-bold">Add A Exercise Page</h1>
+    <h1 class="font-bold underline">Add A Exercise Page</h1>
 
     {{ template "add_exercise_form" . }}
     {{ if .Exercises }}
@@ -203,36 +203,17 @@
 
 
 {{ define "header_bar" }}
-  <nav class="bg-primarydark fixed w-full z-20 top-0 start-0 border-b border-default">
-    <div id="header-bar" class="max-w-screen-xl flex flex-wrap items-center justify-between p-4">
-      <a href="#" class="flex items-center space-x-3 rtl:space-x-reverse">
-          <img src="/static/img/logo.svg" class="h-7" alt="Demo Logo" />
-      </a>
-      <div class="ml-auto md:block md:w-auto" id="navbar-default">
-        <ul class="font-medium flex p-4 md:p-0 mt-4 border border-default rounded-base bg-neutral-secondary-soft md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-neutral-primary">
-          <li>
-          <a href="/addworkout" class="block py-2 px-3 text-primarylight hover:text-blue-400 transition-colors duration-200 bg-brand rounded md:bg-transparent md:text-fg-brand md:p-0">Workout</a>
-          </li>
-          <li>
-          <a href="/addexercise" class="block py-2 px-3 text-primarylight hover:text-blue-400 transition-colors duration-200bg-brand rounded md:bg-transparent md:text-fg-brand md:p-0">Exercise</a>
-          </li>
-          <li>
-          <a href="/graph" class="block py-2 px-3 text-primarylight hover:text-blue-400 transition-colors duration-200bg-brand rounded md:bg-transparent md:text-fg-brand md:p-0">Graph</a>
-          </li>
-          <li>
-          <a href="/workoutsummary" class="block py-2 px-3 text-primarylight hover:text-blue-400 transition-colors duration-200bg-brand rounded md:bg-transparent md:text-fg-brand md:p-0">Workout Summary</a>
-          </li>
-          <li>
-          <a href="/workoutplans" class="block py-2 px-3 text-primarylight hover:text-blue-400 transition-colors duration-200bg-brand rounded md:bg-transparent md:text-fg-brand md:p-0">Workout Plans</a>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </nav>
+  <div id="header-bar">
+    <a href="/addworkout">Workout</a>
+    <a href="/addexercise">Exercise</a>
+    <a href="/graph">Graph</a>
+    <a href="/workoutsummary">Workout Summary</a>
+    <a href="/workoutplans">Workout Plans</a>
+  </div>
 {{ end }}
 
 {{ define "addworkout_page" }}
-  <div id="addworkout_div" class="bg-primarydark text-primarylight p-5">
+  <div id="addworkout_div">
     {{ template "add_workout_form" . }} 
   </div>
 {{ end }}
@@ -240,9 +221,7 @@
 
 {{ define "add_workout_form" }}
   <div id="add_workout_form_div" class="container">
-    <div class="flex justify-center">
-      <h2 class="text-2xl font-bold mb-4">Add Workout Page</h2>
-    </div>
+    <h2>Add Workout Page</h2>
     <select hx-trigger="change" hx-target="#add_workout_form_div" hx-swap="outerHTML" hx-get="/htmx/addworkout/selecttype" name="type" id="add-workout-type-select">
       <option value="WorkoutPlan" {{ if eq .WorkoutInstanceType "PlanWorkout"}}selected="selected"{{ end }}>Planned Workout</option>
       <option value="Custom" {{ if eq .WorkoutInstanceType "Custom"}}selected="selected"{{ end }}>Custom Workout</option>
@@ -256,6 +235,7 @@
 {{ end }}
 
 {{ define "add_workout_planned" }}
+    <h3>Planned Workout</h3>
     <select hx-trigger="change" hx-target="#add_workout_planned_form" hx-swap="outerHTML" hx-get="/htmx/addworkout/selectplan" name="plan" id="add-workout-plan-select" hx-include="#add-workout-type-select">
     {{ range .WorkoutPlans }}
       <option value="{{ .Name }}">{{ .Name }}</option>
@@ -267,21 +247,16 @@
 {{ define "add_workout_planned_form"}}
 <div id="add_workout_planned_form">
       <div id="add_workout_form_data_feature" data-feature="add-workout-planned">
+        <h2>Workout Form</h2>
         <form id="workoutForm" hx-post="/htmx/workouts" hx-target="#add_workout_form_div" hx-swap="outerHTML" method="POST" hx-include="#add-workout-type-select, #add-workout-plan-select">
             <!-- Dynamic Inputs for Exercise Details (Dropdown Name and Value) -->
             <div id="workoutDetails" class="form-group">
                 <br />
-                <div class="flex gap-4">
-                  <div>
-                    <label for="addworkout-start-time">Workout Start Time</label>
-                    <br/>
-                    <input type="datetime-local" min="2026-01-01T00:00" value="2026-01-01T00:00" name="workout-start-time" id="addworkout-start-time"/> 
-                  </div>
-                  <div>
-                    <label for="addworkout-end-time">Workout End Time</label>
-                    <input type="datetime-local" min="2026-01-01T00:00" value="2026-01-01T00:00" name="workout-end-time" id="addworkout-end-time"/> 
-                  </div>
-                </div>
+                <label for="addworkout-start-time">Workout Start Time</label>
+                <input type="datetime-local" min="2026-01-01T00:00" value="2026-01-01T00:00" name="workout-start-time" id="addworkout-start-time"/> 
+                <br />
+                <label for="addworkout-end-time">Workout End Time</label>
+                <input type="datetime-local" min="2026-01-01T00:00" value="2026-01-01T00:00" name="workout-end-time" id="addworkout-end-time"/> 
                 <br />
                 <br />
                 <h3>Exercises</h3>
@@ -306,19 +281,21 @@
             <!-- Add Button -->
             <button type="button" id="addworkout-add-input-button" class="add-btn">+ Add Set</button>
             <br><br>
-            <button type="submit" class="btn-primary">Submit</button>
+            <button type="submit" class="add-btn">Submit</button>
         </form>
       </div>
     </div>
 {{ end }}
 
 {{ define "add_workout_form_custom" }}
+<h3>Custom Workout</h3>
 <div id="add_workout_form_data_feature" data-feature="add-workout-custom">
       <script type="application/json" id="addworkout-data">
         {
           "detailNames": {{.ExercisesJson}}
         }
       </script>
+      <h2>Workout Form</h2>
       <form id="workoutForm" hx-post="/htmx/workouts" hx-target="#add_workout_form_div" hx-swap="outerHTML" method="POST" hx-include="#add-workout-type-select, #add-workout-plan-select">
           <!-- Dynamic Inputs for Exercise Details (Dropdown Name and Value) -->
           <div id="workoutDetails" class="form-group">

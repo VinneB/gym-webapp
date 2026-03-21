@@ -1,0 +1,3 @@
+cd ../tailwind
+pwd
+./tailwindcss -i main.css -o ../static/css/main-tailwind.css --watch

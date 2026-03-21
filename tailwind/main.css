@@ -1,0 +1,23 @@
+@import "tailwindcss";
+@source "../pages/template_test.html";
+@theme {
+  --color-primarylight: #000000;
+  --color-primarydark: #01796b;
+  --color-secondarylight: #a0a0b0;
+  --color-secondarydark: #3e3e41;
+
+  /* Default Font */
+  --font-roboto: "Roboto", sans-serif;
+  --font-sans: var(--font-roboto);  --color-tertiary: #6b6b70;
+
+}
+
+
+/*
+ 
+  --color-primarylight: #d4d4d9;
+  --color-primarydark: #1a1a1e;
+  --color-secondarylight: #a0a0b0;
+  --color-secondarydark: #3e3e41;
+
+*/

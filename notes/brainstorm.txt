@@ -19,3 +19,10 @@ Active Actions
 
 Add workout
   Exercise: Select(name) weight #reps button[remove] button[duplicate]
+
+
+Workout Plan Set Format
+   ExerciseName: x reps of y weight for z sets
+   ExerciseName: x reps of y_1, y_2, y_3,... weight
+  ExerciseName: x_1,x_2,x_3,... of y weight
+  ExerciseName: x_1 reps of y_1 weight, x_2 reps of y_2 weight

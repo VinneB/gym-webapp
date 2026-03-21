@@ -1,13 +1,18 @@
 package server
 
 import (
+	"encoding/json"
+	"html/template"
 	"log"
 	"net/http"
 	"slices"
 	"strconv"
+	"strings"
 	"time"
 	"unicode"
 
+	"github.com/VinneB/gym-webapp/internal/calc"
+	"github.com/VinneB/gym-webapp/internal/middleware"
 	"github.com/VinneB/gym-webapp/internal/sql"
 	"github.com/VinneB/gym-webapp/internal/structapi"
 )
@@ -17,7 +22,7 @@ func ExercisesGetHandler(w http.ResponseWriter, r *http.Request) {
 
 func ExercisesPostHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Exercises Post Handler")
-	renderer := newTemplate()
+	renderer := middleware.NewTemplate()
 	var data structapi.Data
 	for {
 		err := r.ParseForm()
@@ -67,7 +72,7 @@ func ExercisesPostHandler(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 		// Render
-		data, err = getData(r.URL.Path)
+		data, err = getData(r)
 		if err != nil {
 			log.Println(err)
 			SendError(w, r, http.StatusUnprocessableEntity, "Error")
@@ -80,22 +85,23 @@ func ExercisesPostHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func WorkoutsPostHandler(w http.ResponseWriter, r *http.Request) {
-	renderer := newTemplate()
+	renderer := middleware.NewTemplate()
 	var data structapi.Data
 	for {
 		err := r.ParseForm()
+		log.Println(r.Form)
 		if err != nil {
 			log.Println(err)
 			SendError(w, r, http.StatusInternalServerError, err.Error())
 			break
 		}
 		log.Print(r.Form)
-		if len(r.Form["exerciseName"]) < 1 || len(r.Form["exerciseName"]) != len(r.Form["partialRepAmount"]) || len(r.Form["exerciseName"]) != len(r.Form["repAmount"]) || len(r.Form["exerciseName"]) != len(r.Form["setAmount"]) || len(r.Form["exerciseName"]) != len(r.Form["weightAmount"]) {
+		if (r.FormValue("type") == "Custom" && (len(r.Form["exerciseName"]) < 1 || len(r.Form["exerciseName"]) != len(r.Form["partialRepAmount"]) || len(r.Form["exerciseName"]) != len(r.Form["repAmount"]) || len(r.Form["exerciseName"]) != len(r.Form["setAmount"]) || len(r.Form["exerciseName"]) != len(r.Form["weightAmount"]))) || (r.FormValue("type") == "WorkoutPlan" && (len(r.Form["exerciseName"]) < 1 || len(r.Form["exerciseName"]) != len(r.Form["partialRepAmount"]) || len(r.Form["exerciseName"]) != len(r.Form["repAmount"]) || len(r.Form["exerciseName"]) != len(r.Form["weightAmount"]))) {
 			log.Println("Failed length sanitation")
 			SendError(w, r, http.StatusUnprocessableEntity, "Failed length sanitation")
 			break
 		}
-		exercises, err := sql.GetExercises()
+		exercises, err := sql.GetExercises(0)
 		if err != nil {
 			log.Println(err)
 			SendError(w, r, http.StatusInternalServerError, "InternalError")
@@ -120,14 +126,19 @@ func WorkoutsPostHandler(w http.ResponseWriter, r *http.Request) {
 				break
 			}
 
-			setAmountInt, err := strconv.Atoi(r.Form["setAmount"][index])
-			if err != nil {
-				log.Println("Failed to parse setAmount" + err.Error())
-				SendError(w, r, http.StatusUnprocessableEntity, "InternalError")
-				break
+			var setAmountInt int
+			if r.FormValue("type") == "Custom" {
+				setAmountInt, err = strconv.Atoi(r.Form["setAmount"][index])
+				if err != nil {
+					log.Println("Failed to parse setAmount" + err.Error())
+					SendError(w, r, http.StatusUnprocessableEntity, "InternalError")
+					break
+				}
+			} else {
+				setAmountInt = 1
 			}
 
-			weightAmountFloat, err := strconv.ParseFloat(r.Form["setAmount"][index], 32)
+			weightAmountFloat, err := strconv.ParseFloat(r.Form["weightAmount"][index], 32)
 			if err != nil {
 				log.Println("Failed to parse weightAmount" + err.Error())
 				SendError(w, r, http.StatusUnprocessableEntity, "InternalError")
@@ -139,14 +150,16 @@ func WorkoutsPostHandler(w http.ResponseWriter, r *http.Request) {
 				SendError(w, r, http.StatusInternalServerError, "InternalError")
 				break
 			}
-			time, err := time.Parse("2006-01-02T15:04", r.Form["startTime"][index])
+			timeStringPrefix := strings.Split(r.Form["workout-start-time"][0], "T")[0] + "T"
+			log.Println(timeStringPrefix)
+			time, err := time.Parse("2006-01-02T15:04", timeStringPrefix+r.Form["startTime"][index])
 			if err != nil {
 				log.Println("Time format invalid")
 				SendError(w, r, http.StatusUnprocessableEntity, "Bad time")
 				break
 			}
 			for i := 0; i < setAmountInt; i++ {
-				sets = append(sets, structapi.Set{ExerciseName: r.Form["exerciseName"][index], Reps: int16(repAmountInt), PartialReps: int16(partialRepAmountInt), Weight: int16(weightAmountFloat), Time: time})
+				sets = append(sets, structapi.Set{ExerciseName: r.Form["exerciseName"][index], Reps: int16(repAmountInt), PartialReps: int16(partialRepAmountInt), Weight: float32(weightAmountFloat), Time: time})
 			}
 		}
 
@@ -184,7 +197,7 @@ func WorkoutsPostHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Render
-		data, err = getData(r.URL.Path)
+		data, err = getData(r)
 		if err != nil {
 			log.Println(err)
 			SendError(w, r, http.StatusUnprocessableEntity, "Error")
@@ -195,8 +208,101 @@ func WorkoutsPostHandler(w http.ResponseWriter, r *http.Request) {
 		break
 
 	}
+	data.WorkoutInstanceType = r.FormValue("type")
 	renderer.Render(w, "add_workout_form", data)
 }
 
 func WorkoutsGetHandler(w http.ResponseWriter, r *http.Request) {
+}
+
+func GraphsPostHandler(w http.ResponseWriter, r *http.Request) {
+}
+
+func GraphsDeleteHandler(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		log.Println(err)
+	}
+	log.Println(r.Form)
+	// renderer := middleware.NewTemplate()
+	// data := structapi.Data{}
+
+	// renderer.Render(w, "graph_page", data)
+}
+
+func GraphsCalcTypeGetHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println(r)
+	calcType := r.URL.Query().Get("graph-dataset-calctype-select")
+	log.Println(calcType)
+	options, _ := calc.GetOptions(calcType)
+	log.Println(options)
+	middleware.NewTemplate().Render(w, "graph_dataset_calctype_option", options)
+}
+
+func GraphsGetHandler(w http.ResponseWriter, r *http.Request) {
+	data := structapi.Data{}
+	r.ParseForm()
+	log.Println(r.Form)
+	calcType := r.Form["graph-dataset-calctype-select"][0]
+	option := r.Form["graph-dataset-calctype-option-select"][0]
+	log.Println(calcType + " " + option)
+	points, _, _ := calc.Calculate(calcType, option, "not_implemented_yet")
+	log.Println(points)
+	data.ChartDataSets = append(data.ChartDataSets, structapi.ChartDataSet{Label: option, Points: points, CalcType: calcType})
+	graphAppData, _ := json.Marshal(data.ChartDataSets)
+	data.ChartDataSetsJson = template.JS(graphAppData)
+	middleware.NewTemplate().Render(w, "graph_chart", data)
+	middleware.NewTemplate().Render(w, "graph_dataset_info", data)
+}
+
+func WorkoutPlansPostHandler(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		log.Println(err)
+	}
+	workoutPlan := structapi.PlanWorkout{}
+	planName := r.Form["workoutplan-new-name"][0]
+	planSets := []structapi.PlanSet{}
+	for i := range r.Form["exercise-name"] {
+		exerciseName := r.Form["exercise-name"][i]
+		lowerRepLimit, err := strconv.Atoi(r.Form["lower-rep-limit"][i])
+		upperRepLimit, err := strconv.Atoi(r.Form["upper-rep-limit"][i])
+		repsInReserve, err := strconv.Atoi(r.Form["reps-in-reserve"][i])
+		setAmount, err := strconv.Atoi(r.Form["set-amount"][i])
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		for j := 0; j < setAmount; j++ {
+			planSets = append(planSets, structapi.PlanSet{ExerciseName: exerciseName, RepLowerRange: int16(lowerRepLimit), RepUpperRange: int16(upperRepLimit), RIR: int16(repsInReserve)})
+		}
+	}
+	workoutPlan = structapi.PlanWorkout{Name: planName, UserEmail: "not_implemented_yet", Sets: planSets}
+	sql.AddPlanWorkout(workoutPlan)
+	data, err := getData(r)
+	if err != nil {
+		log.Println("Failed to parse data")
+	}
+	middleware.NewTemplate().Render(w, "workoutplans_page", data)
+}
+
+func AddWorkoutSelectTypeGetHandler(w http.ResponseWriter, r *http.Request) {
+	data, err := getData(r)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	data.WorkoutInstanceType = r.FormValue("type")
+	middleware.NewTemplate().Render(w, "add_workout_form", data)
+	log.Println(data.WorkoutInstanceType)
+}
+
+func AddWorkoutSelectPlanGetHandler(w http.ResponseWriter, r *http.Request) {
+	data, err := getData(r)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	data.WorkoutInstanceType = r.FormValue("type")
+	middleware.NewTemplate().Render(w, "add_workout_planned_form", data)
 }

@@ -24,7 +24,7 @@ type Set struct {
 	ExerciseName string    `db:"exercise_name"`
 	Reps         int16     `db:"reps"`
 	PartialReps  int16     `db:"partial_reps"`
-	Weight       int16     `db:"weight"`
+	Weight       float32   `db:"weight"`
 	WorkoutId    int       `db:"workout_id"`
 	Time         time.Time `db:"time"`
 	Type         string    `db:"type"`
@@ -32,29 +32,27 @@ type Set struct {
 }
 
 type PlanSet struct {
-	ExerciseName  string `json:"name"`
-	RepUpperRange int16  `json:"upper_rep"`
-	RepLowerRange int16  `json:"lower_rep"`
-	Weight        int16  `json:"weight"`
-	RIR           int16  `json:"rir"`
-	Type          string `json:"type"`
+	ExerciseName  string  `json:"name"`
+	RepUpperRange int16   `json:"upper_rep"`
+	RepLowerRange int16   `json:"lower_rep"`
+	Weight        float32 `json:"weight"`
+	RIR           int16   `json:"rir"`
+	Type          string  `json:"type"`
 }
 
 type PlanWorkout struct {
-	Id         int `db:"id"`
-	InstanceId int `db:"instance_id"`
+	Id             int       `db:"id"`
+	Name           string    `db:"name"`
+	UserEmail      string    `db:"user_email"`
+	Sets           []PlanSet `json:"data"`
+	SetCollections []SetCollection
 }
 
-type PlanWorkoutInstance struct {
-	Id        int       `db:"id"`
-	Name      string    `db:"name"`
-	Sets      []PlanSet `db:"data"`
-	UserEmail string    `db:"user_email"`
-}
-
-type SetCollection struct {
-	Exercise string
-	Sets     []Set
+type PlanWorkoutSqlForm struct {
+	Id        int    `db:"id"`
+	Name      string `db:"name"`
+	UserEmail string `db:"user_email"`
+	Sets      string `db:"data"`
 }
 
 type WorkoutInstance struct {
@@ -65,3 +63,19 @@ type WorkoutInstance struct {
 }
 
 var Muscles = []string{"Abs", "Biceps", "Calves", "Forearms", "Front Delts", "Glutes", "Hamstrings", "Lats", "Lower Back", "Pectorals", "Quads", "Rear Delts", "Rhomboids", "Side Delts", "Traps", "Triceps"}
+
+func ExerciseToMap(exercises []Exercise) map[string]Exercise {
+	exerciseMap := map[string]Exercise{}
+	for _, exercise := range exercises {
+		exerciseMap[exercise.Name] = exercise
+	}
+	return exerciseMap
+}
+
+func MuscleFractionsToMap(muscleFractions []MuscleFraction) map[string]MuscleFraction {
+	muscleFractionMap := map[string]MuscleFraction{}
+	for _, element := range muscleFractions {
+		muscleFractionMap[element.Name] = element
+	}
+	return muscleFractionMap
+}

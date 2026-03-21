@@ -2,8 +2,10 @@ package sql
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
+	"slices"
 	"strconv"
 
 	"github.com/VinneB/gym-webapp/internal/structapi"
@@ -17,9 +19,25 @@ var addWorkoutText string = `INSERT INTO workouts (user_email, start_time, end_t
 
 var addSetText string = `INSERT INTO sets (exercise_name, reps, partial_reps, weight, workout_id, time, type, user_email) VALUES (:exercise_name, :reps, :partial_reps, :weight, :workout_id, :time, :type, :user_email)`
 
-var getUserWorkoutsText string = `SELECT id FROM workouts WHERE user_email=?;`
+var getAllSetsOfExerciseText string = `SELECT * FROM sets WHERE user_email=? AND exercise_name=?;`
+
+var getAllSetsOfExerciseInListText string = `SELECT * FROM sets WHERE user_email=? AND exercise_name IN (?);`
+
+var getAllSetsText string = `SELECT * FROM sets WHERE user_email=?;`
+
+var getUserWorkoutsText string = `SELECT * FROM workouts WHERE user_email=?;`
 
 var getAllExercisesText string = `SELECT * FROM exercises;`
+
+var getFirstExercisesText string = `SELECT * FROM exercises LIMIT ?;`
+
+var getAllSetsWithWorkoutIdText string = `SELECT * FROM sets WHERE user_email=? AND workout_id=?;`
+
+var getAllPlanWorkoutsText string = `SELECT * FROM plan_workouts WHERE user_email=?;`
+
+var addPlanWorkoutText string = `INSERT INTO plan_workouts (name, user_email, data) VALUES (:name, :user_email, :data);`
+
+var getPlanWorkoutText string = `SELECT * FROM plan_workouts WHERE user_email=? AND name=?;`
 
 var (
 	rootPathDB string = "data/"
@@ -29,11 +47,18 @@ var (
 var db *sqlx.DB
 
 var (
-	addExerciseStmt        *sqlx.NamedStmt
-	addWorkoutStmt         *sqlx.NamedStmt
-	addSetStmt             *sqlx.NamedStmt
-	getAllUserWorkoutsStmt *sqlx.Stmt
-	getAllExercisesStmt    *sqlx.Stmt
+	addExerciseStmt             *sqlx.NamedStmt
+	addWorkoutStmt              *sqlx.NamedStmt
+	addSetStmt                  *sqlx.NamedStmt
+	addPlanWorkoutStmt          *sqlx.NamedStmt
+	getAllSetsOfExerciseStmt    *sqlx.Stmt
+	getAllUserWorkoutsStmt      *sqlx.Stmt
+	getAllExercisesStmt         *sqlx.Stmt
+	getFirstExercisesStmt       *sqlx.Stmt
+	getAllSetsStmt              *sqlx.Stmt
+	getAllSetsWithWorkoutIdStmt *sqlx.Stmt
+	getAllPlanWorkoutStmt       *sqlx.Stmt
+	getPlanWorkoutStmt          *sqlx.Stmt
 )
 
 func Connect() error {
@@ -68,11 +93,54 @@ func Connect() error {
 		log.Println(err)
 		return err
 	}
+	temp_getAllSetsOfExercise, err := db.Preparex(getAllSetsOfExerciseText)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	temp_getFirstExercises, err := db.Preparex(getFirstExercisesText)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	temp_getAllSets, err := db.Preparex(getAllSetsText)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	temp_getAllSetsWithWorkoutIdStmt, err := db.Preparex(getAllSetsWithWorkoutIdText)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	temp_getAllPlanWorkoutStmt, err := db.Preparex(getAllPlanWorkoutsText)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	temp_addPlanWorkoutStmt, err := db.PrepareNamed(addPlanWorkoutText)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	temp_getPlanWorkoutStmt, err := db.Preparex(getPlanWorkoutText)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
 	addExerciseStmt = temp_addExerciseStmt
 	addWorkoutStmt = temp_addWorkoutStmt
 	getAllUserWorkoutsStmt = temp_getUserWorkoutsStmt
 	getAllExercisesStmt = temp_getAllExercisesStmt
 	addSetStmt = temp_addSetStmt
+	getAllSetsOfExerciseStmt = temp_getAllSetsOfExercise
+	getFirstExercisesStmt = temp_getFirstExercises
+	getAllSetsStmt = temp_getAllSets
+	getAllSetsWithWorkoutIdStmt = temp_getAllSetsWithWorkoutIdStmt
+	getAllPlanWorkoutStmt = temp_getAllPlanWorkoutStmt
+	addPlanWorkoutStmt = temp_addPlanWorkoutStmt
+	getPlanWorkoutStmt = temp_getPlanWorkoutStmt
 	log.Println("Connected to sqlite3 database")
 	return nil
 }
@@ -83,6 +151,13 @@ func CloseDatabase() {
 	addWorkoutStmt.Close()
 	getAllUserWorkoutsStmt.Close()
 	getAllExercisesStmt.Close()
+	addSetStmt.Close()
+	getAllSetsOfExerciseStmt.Close()
+	getFirstExercisesStmt.Close()
+	getAllSetsStmt.Close()
+	getAllSetsWithWorkoutIdStmt.Close()
+	getAllPlanWorkoutStmt.Close()
+	addPlanWorkoutStmt.Close()
 	log.Println("Closed sqlite3 database")
 }
 
@@ -113,6 +188,80 @@ func AddSet(exercise structapi.Set) error {
 		return err
 	}
 	return nil
+}
+
+func GetAllSets(userName string) ([]structapi.Set, error) {
+	sets := []structapi.Set{}
+	err := getAllSetsStmt.Select(&sets, userName)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+	return sets, nil
+}
+
+func GetAllSetsOfExercise(exerciseName string, userName string) ([]structapi.Set, error) {
+	sets := []structapi.Set{}
+	err := getAllSetsOfExerciseStmt.Select(&sets, userName, exerciseName)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+	return sets, nil
+}
+
+func GetAllSetsWithWorkoutId(workoutId int, userName string) ([]structapi.Set, error) {
+	sets := []structapi.Set{}
+	err := getAllSetsWithWorkoutIdStmt.Select(&sets, userName, workoutId)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+	return sets, nil
+}
+
+func GetAllSetsThatTargetAMuscle(muscle string, userName string) ([]structapi.Set, []structapi.Exercise, error) {
+	validExercises, err := GetAllExercisesThatTargetAMuscle(muscle, userName)
+	if err != nil {
+		return nil, nil, err
+	}
+	exerciseNameList := []string{}
+	for _, exercise := range validExercises {
+		exerciseNameList = append(exerciseNameList, exercise.Name)
+	}
+	log.Printf("exerciseNameList= %s\n", exerciseNameList)
+	query, args, err := sqlx.In(getAllSetsOfExerciseInListText, userName, exerciseNameList)
+	if err != nil {
+		return nil, nil, err
+	}
+	query = db.Rebind(query)
+	log.Println("query: " + query)
+	log.Println(args)
+	sets := []structapi.Set{}
+	err = db.Select(&sets, query, args...)
+	if err != nil {
+		log.Println(err)
+	}
+	return sets, validExercises, nil
+}
+
+func GetAllExercisesThatTargetAMuscle(muscle string, userName string) ([]structapi.Exercise, error) {
+	exercises, err := GetExercises(0)
+	results := []structapi.Exercise{}
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+	for _, exercise := range exercises {
+		muscleNames := []string{}
+		for _, val := range exercise.MuscleFractions {
+			muscleNames = append(muscleNames, val.Name)
+		}
+		if slices.Contains(muscleNames, muscle) {
+			results = append(results, exercise)
+		}
+	}
+	return results, nil
 }
 
 func AddExercise(exercise structapi.Exercise) error {
@@ -169,7 +318,7 @@ func AddWorkoutInstance(workout structapi.WorkoutInstance) (int64, error) {
 
 func GetAllUserWorkouts(email string) ([]structapi.WorkoutInstance, error) {
 	workouts := []structapi.WorkoutInstance{}
-	err := getAllUserWorkoutsStmt.Select(workouts, email)
+	err := getAllUserWorkoutsStmt.Select(&workouts, email)
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -207,9 +356,14 @@ func dep_GetAllUserWorkouts(email string) ([]structapi.WorkoutInstance, error) {
 	return workouts, nil
 }
 
-func GetExercises() ([]structapi.Exercise, error) {
+func GetExercises(count int) ([]structapi.Exercise, error) {
+	var err error
 	exercisesRaw := []structapi.ExerciseSqlForm{}
-	err := getAllExercisesStmt.Select(&exercisesRaw)
+	if count > 0 {
+		err = getFirstExercisesStmt.Select(&exercisesRaw, count)
+	} else {
+		err = getAllExercisesStmt.Select(&exercisesRaw)
+	}
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -264,4 +418,73 @@ func sqlFormToExercise(exerciseRaw structapi.ExerciseSqlForm) (structapi.Exercis
 		return structapi.Exercise{}, err
 	}
 	return structapi.Exercise{Name: exerciseRaw.Name, MuscleFractions: muscleFractions}, nil
+}
+
+func sqlFormToPlanWorkout(planWorkoutRaw structapi.PlanWorkoutSqlForm) (structapi.PlanWorkout, error) {
+	planSets := []structapi.PlanSet{}
+	err := json.Unmarshal([]byte(planWorkoutRaw.Sets), &planSets)
+	if err != nil {
+		return structapi.PlanWorkout{}, err
+	}
+	return structapi.PlanWorkout{Name: planWorkoutRaw.Name, Id: planWorkoutRaw.Id, UserEmail: planWorkoutRaw.UserEmail, Sets: planSets}, nil
+}
+
+func planWorkoutToSqlForm(planWorkout structapi.PlanWorkout) (structapi.PlanWorkoutSqlForm, error) {
+	sqlFormSets, err := json.Marshal(planWorkout.Sets)
+	if err != nil {
+		return structapi.PlanWorkoutSqlForm{}, err
+	}
+	return structapi.PlanWorkoutSqlForm{Name: planWorkout.Name, Id: planWorkout.Id, UserEmail: planWorkout.UserEmail, Sets: string(sqlFormSets)}, nil
+}
+
+func GetAllPlanWorkouts(userEmail string) ([]structapi.PlanWorkout, error) {
+	planWorkouts := []structapi.PlanWorkoutSqlForm{}
+	err := getAllPlanWorkoutStmt.Select(&planWorkouts, userEmail)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+	returnVal := []structapi.PlanWorkout{}
+	for _, planWorkout := range planWorkouts {
+		workout, err := sqlFormToPlanWorkout(planWorkout)
+		if err != nil {
+			log.Println(err)
+			return nil, err
+		}
+		returnVal = append(returnVal, workout)
+	}
+	return returnVal, nil
+}
+
+func AddPlanWorkout(planWorkout structapi.PlanWorkout) error {
+	sqlFormPlanWorkout, err := planWorkoutToSqlForm(planWorkout)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	_, err = addPlanWorkoutStmt.Exec(&sqlFormPlanWorkout)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	return nil
+}
+
+func GetPlanWorkout(workoutPlanName string, userEmail string) (structapi.PlanWorkout, error) {
+	planWorkout := []structapi.PlanWorkoutSqlForm{}
+	err := getPlanWorkoutStmt.Select(&planWorkout, userEmail, workoutPlanName)
+	if len(planWorkout) < 1 {
+		newErr := errors.New("No Plan workout with this name found")
+		return structapi.PlanWorkout{}, newErr
+	}
+	if err != nil {
+		log.Println("getPlanWorkoutStmt failed: " + err.Error())
+		return structapi.PlanWorkout{}, err
+	}
+	workout, err := sqlFormToPlanWorkout(planWorkout[0])
+	if err != nil {
+		log.Println("sqlFormToPlanWorkout failed: " + err.Error())
+		return structapi.PlanWorkout{}, err
+	}
+	return workout, nil
 }
