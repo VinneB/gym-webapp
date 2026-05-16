@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"fmt"
 	"html/template"
 	"log"
 	"net/http"
@@ -78,10 +79,9 @@ func ExercisesPostHandler(w http.ResponseWriter, r *http.Request) {
 			SendError(w, r, http.StatusUnprocessableEntity, "Error")
 			break
 		}
-		renderer.Render(w, "add_exercise_list", data)
 		break
 	}
-	renderer.Render(w, "add_exercise_form", data)
+	renderer.Render(w, "addexercise_page", data)
 }
 
 func WorkoutsPostHandler(w http.ResponseWriter, r *http.Request) {
@@ -163,6 +163,11 @@ func WorkoutsPostHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
+		planName := ""
+		if r.FormValue("type") == "WorkoutPlan" {
+			planName = r.FormValue("plan")
+		}
+
 		starttime, err := time.Parse("2006-01-02T15:04", r.Form["workout-start-time"][0])
 		if err != nil {
 			log.Println("Workout start time format invalid")
@@ -175,7 +180,8 @@ func WorkoutsPostHandler(w http.ResponseWriter, r *http.Request) {
 			SendError(w, r, http.StatusUnprocessableEntity, "Bad time")
 			break
 		}
-		workoutId, err := sql.AddWorkoutInstance(structapi.WorkoutInstance{UserEmail: "not_implemented_yet", StartTime: starttime, EndTime: endtime})
+
+		workoutId, err := sql.AddWorkoutInstance(structapi.WorkoutInstance{UserEmail: "not_implemented_yet", StartTime: starttime, EndTime: endtime, PlanName: planName})
 		log.Println(workoutId)
 		if err != nil {
 			log.Println("AddWorkoutInstance func failed" + err.Error())
@@ -257,11 +263,13 @@ func GraphsGetHandler(w http.ResponseWriter, r *http.Request) {
 
 func WorkoutPlansPostHandler(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
+	log.Println(r.Form)
 	if err != nil {
 		log.Println(err)
 	}
 	workoutPlan := structapi.PlanWorkout{}
-	planName := r.Form["workoutplan-new-name"][0]
+	planName := r.Form["newWorkoutPlanName"][0]
+	log.Println("test2")
 	planSets := []structapi.PlanSet{}
 	for i := range r.Form["exercise-name"] {
 		exerciseName := r.Form["exercise-name"][i]
@@ -304,5 +312,7 @@ func AddWorkoutSelectPlanGetHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	data.WorkoutInstanceType = r.FormValue("type")
+	r.ParseForm()
+	fmt.Println(r.Form)
 	middleware.NewTemplate().Render(w, "add_workout_planned_form", data)
 }

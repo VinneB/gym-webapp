@@ -1,10 +1,16 @@
 @import "tailwindcss";
 @source "../pages/template_test.html";
+@source "../static/js";
 @theme {
-  --color-primarylight: #000000;
-  --color-primarydark: #01796b;
+  --color-primarylight: #FFFFFF;
+  --color-primarydark: #0F172A;
   --color-secondarylight: #a0a0b0;
-  --color-secondarydark: #3e3e41;
+  --color-secondarydark: #1E293B;
+
+  --color-submitbutton: #64748B;
+  --color-submitbutton-strong: #1E293B;
+  --color-deletebutton: #CC1100;
+  --color-deletebutton-strong: #BB0000;
 
   /* Default Font */
   --font-roboto: "Roboto", sans-serif;
@@ -12,6 +18,47 @@
 
 }
 
+
+.accordian .active-icon {
+  @apply hidden
+}
+
+.accordian.active .inactive-icon {
+  @apply hidden
+}
+
+.accordian.active .active-icon {
+  @apply block
+}
+
+.accordian:not(.active) .accordian-content {
+  @apply max-h-0
+}
+
+.accordian.active .accordian-content {
+  @apply max-h-96
+}
+
+
+.sub-accordian .sub-active-icon {
+  @apply hidden
+}
+
+.sub-accordian.active .sub-inactive-icon {
+  @apply hidden
+}
+
+.sub-accordian.active .sub-active-icon {
+  @apply block
+}
+
+.sub-accordian:not(.active) .sub-accordian-content {
+  @apply max-h-0
+}
+
+.sub-accordian.active .sub-accordian-content {
+  @apply max-h-96
+}
 
 /*
  

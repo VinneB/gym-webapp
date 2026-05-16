@@ -15,7 +15,7 @@ import (
 
 var addExerciseText string = `INSERT INTO exercises (name, data) VALUES (:name, :data);`
 
-var addWorkoutText string = `INSERT INTO workouts (user_email, start_time, end_time) VALUES (:user_email, :start_time, :end_time);`
+var addWorkoutText string = `INSERT INTO workouts (user_email, start_time, end_time, plan_name) VALUES (:user_email, :start_time, :end_time, :plan_name);`
 
 var addSetText string = `INSERT INTO sets (exercise_name, reps, partial_reps, weight, workout_id, time, type, user_email) VALUES (:exercise_name, :reps, :partial_reps, :weight, :workout_id, :time, :type, :user_email)`
 

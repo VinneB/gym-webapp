@@ -53,6 +53,7 @@ type WorkoutSummary struct {
 	Sets           []Set
 	ExerciseVolume []ChartPoint
 	MuscleVolume   []ChartPoint
+	WorkoutPlan    string
 }
 
 type SetCollection struct {

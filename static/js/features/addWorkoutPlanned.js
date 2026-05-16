@@ -59,6 +59,7 @@ function createWorkoutInput(container, planNames) {
   defaultOption.value = "";
   defaultOption.textContent = "Select Exercise";
   newNameSelect.appendChild(defaultOption);
+  newNameSelect.classList.add("bg-secondarydark")
 
   // Add static options to the select dropdown (no randomness)
   for (let i = 0; i < planNames.length; i++) {

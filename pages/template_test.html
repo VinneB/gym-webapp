@@ -29,15 +29,18 @@
 <!-- Add Exercise Page -->
 
 {{ define "addexercise_page" }}
-  <div id="addexercise_div">
-    <h1 class="font-bold">Add A Exercise Page</h1>
-
-    {{ template "add_exercise_form" . }}
-    {{ if .Exercises }}
-      {{ template "add_exercise_list" . }}
-    {{ else }}
-      <p>No exercises found</p>
-    {{ end }}
+  <div id="addexercise_div" class="text-primarylight p-5 w-7xl justify-center">
+    <div class="flex justify-center">
+      <h2 class="text-2xl font-bold mb-4">Add Exercise Page</h2>
+    </div>
+    <div id="addexercise-main-div" class="flex h-screen">
+      {{ template "add_exercise_form" . }}
+      {{ if .Exercises }}
+        {{ template "add_exercise_list" . }}
+      {{ else }}
+        <p>No exercises found</p>
+      {{ end }}
+    </div>
   </div>
 {{ end }}
 
@@ -54,53 +57,82 @@
 -->
 
 {{ define "add_exercise_form" }} 
-  <div id="add_exercise_form_div" class="container">
+  <div id="add_exercise_form_div" class="container bg-primarydark m-1 w-1/2 p-4">
     <div id="add_exercise_form_data_feature"  data-feature="add-exercise">
       <script type="application/json" id="addexercise-data">
         {
         "detailNames": {{ .MusclesJson }}
         }
       </script>
-      <h2>Exercise Form</h2>
-      <form id="addexercise-form" hx-post="/htmx/exercises" hx-target="#add_exercise_form_div" method="POST">
+        <div class="flex justify-center">
+          <h2 class="text-xl font-bold mb-4">Add Exercise</h2>
+        </div>
+      <form id="addexercise-form" hx-post="/htmx/exercises" hx-target="#addexercise_div" hx-swap="outerHTML"  method="POST">
         <!-- Exercise Name -->
         <div class="form-group">
-            <label for="addexercise-exercisename">Exercise Name</label>
+            <label for="addexercise-exercisename" class="mr-2">Name:</label>
             <input class="border" type="text" id="addexercise-exercisename" name="exerciseName" required placeholder="Enter exercise name">
         </div>
+        <br />
         <!-- Dynamic Inputs for Exercise Details (Dropdown Name and Value) -->
         <div id="addexercise-detail-collection" class="form-group">
-            <label>Exercise Details</label>
+          <p class="font-bold">Fractional Muscle Activation</p>
             <!-- The first exercise detail will be added dynamically by JavaScript -->
         </div>
         <!-- Add Button -->
         <button type="button" id="addexercise-add-input-button" class="add-btn">+ Add Detail</button>
         <br><br>
-        <button type="submit" class="add-btn">Submit</button>
+        <button type="submit" class="bg-submitbutton box-border border hover:bg-submitbutton-strong focus:ring-1 focus:ring-black shadow-xs font-medium leading-5 rounded-sm text-sm px-4 py-1 focus:outline-none">Submit</button>
       </form>
     </div>
   </div>
 {{ end }}
 
 {{ define "add_exercise_list" }}
-  <div id="exercise-list" hx-swap-oob="true">
-  <h2>Current Exercises</h2>
-  {{range .Exercises}}
-    {{ template "exercise" . }}
-  {{ end }}
+  <div id="exercise-list" class="bg-primarydark m-1 w-1/2 p-4">
+    <div class="flex justify-center">
+      <h2 class="text-xl font-bold mb-4">Exercises</h2>
+    </div>
+    <div class="flex flex-col gap-1 bg-slate-800 rounded-lg overflow-hidden accordian-container">
+    {{range .Exercises}}
+      {{ template "exercise" . }}
+    {{ end }}
+    </div>
   </div>
 {{ end }}
 
 {{ define "exercise" }}
-  <div class="exercise-list-item">
-    <p>{{ .Name }}</p>
-    <ul>
-      {{ range .MuscleFractions }}
-        <li>{{ .Name }}: {{ .Fraction }}</li>
+  <div id="exercise-list-item" class="accordian text-primarylight text-sm w-full flex justify-center flex-col transition-all duration-500" data-feature="accordian">
+    <div class="accordian-header p-4 font-bold bg-slate-900 flex justify-between items-center cursor-pointer">
+      <div>{{ .Name }}</div>
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 active-icon">
+        <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" />
+      </svg>
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 inactive-icon">
+        <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+      </svg>
+    </div>
+    <div class="accordian-content transition-all duration-500 overflow-hidden">
+      {{ range $index, $element := .MuscleFractions }}
+      <div class="accordian-item p-4 {{if eq (mod $index 2) 0}}bg-slate-800{{else}}bg-slate-700{{end}} justify-between flex">
+        <div>{{ $element.Name }}</div>
+        <div>{{ (mult $element.Fraction 100) }}% muscle activation</div>
+        </div>
       {{ end }}
-    </ul>
+    </div>
   </div>
 {{ end }}
+
+
+  <!-- <div class="exercise-list-item"> -->
+  <!--   <p>{{ .Name }}</p> -->
+  <!--   <ul> -->
+  <!--     {{ range .MuscleFractions }} -->
+  <!--       <li>{{ .Name }}: {{ .Fraction }}</li> -->
+  <!--     {{ end }} -->
+  <!--   </ul> -->
+  <!-- </div> -->
+
 
 <!-- Error -->
 
@@ -232,23 +264,31 @@
 {{ end }}
 
 {{ define "addworkout_page" }}
-  <div id="addworkout_div" class="bg-primarydark text-primarylight p-5">
-    {{ template "add_workout_form" . }} 
+  <div id="addworkout_div" class="bg-primarydark text-primarylight p-5 w-7xl">
+    {{ template "add_workout_select_type" . }} 
   </div>
 {{ end }}
 
 
-{{ define "add_workout_form" }}
+{{ define "add_workout_select_type" }}
   <div id="add_workout_form_div" class="container">
     <div class="flex justify-center">
       <h2 class="text-2xl font-bold mb-4">Add Workout Page</h2>
     </div>
-    <select hx-trigger="change" hx-target="#add_workout_form_div" hx-swap="outerHTML" hx-get="/htmx/addworkout/selecttype" name="type" id="add-workout-type-select">
-      <option value="WorkoutPlan" {{ if eq .WorkoutInstanceType "PlanWorkout"}}selected="selected"{{ end }}>Planned Workout</option>
-      <option value="Custom" {{ if eq .WorkoutInstanceType "Custom"}}selected="selected"{{ end }}>Custom Workout</option>
-    </select>
+    <form id="add-workout-type-form" hx-swap="innerHTML" hx-get="/htmx/addworkout/selecttype" hx-target="#add_workout_form_div" >
+        <label for="add-workout-type-select">Select a workout format :</label>
+        <select name="type" id="add-workout-type-select" class="border rounded-sm bg-secondarydark">
+          <option value="WorkoutPlan" {{ if eq .WorkoutInstanceType "PlanWorkout"}}selected="selected"{{ end }}>Planned Workout</option>
+          <option value="Custom" {{ if eq .WorkoutInstanceType "Custom"}}selected="selected"{{ end }}>Custom Workout</option>
+        </select>
+        <br/><br/>
+      <button type="submit" class="bg-submitbutton box-border border hover:bg-submitbutton-strong focus:ring-1 focus:ring-black shadow-xs font-medium leading-5 rounded-sm text-sm px-4 py-1 focus:outline-none">Submit</button>
+    </form>
+{{ end }}
+
+{{ define "add_workout_form"}}
   {{ if eq .WorkoutInstanceType "Custom" }}
-    {{ template "add_workout_form_custom" . }}
+    {{ template "add_workout_custom_form" . }}
   {{ else if eq .WorkoutInstanceType "WorkoutPlan" }}
     {{ template "add_workout_planned" . }}
   {{ end }}
@@ -256,12 +296,19 @@
 {{ end }}
 
 {{ define "add_workout_planned" }}
-    <select hx-trigger="change" hx-target="#add_workout_planned_form" hx-swap="outerHTML" hx-get="/htmx/addworkout/selectplan" name="plan" id="add-workout-plan-select" hx-include="#add-workout-type-select">
-    {{ range .WorkoutPlans }}
-      <option value="{{ .Name }}">{{ .Name }}</option>
+    <a href="/addworkout" class="underline">Back</a>
+    <br>
+    <br>
+    {{ if .WorkoutPlans }}
+      <select hx-trigger="change" hx-target="#add_workout_planned_form" hx-swap="outerHTML" hx-get="/htmx/addworkout/selectplan" name="plan" id="add-workout-plan-select" hx-include="#add-workout-type-select" class="border rounded-sm bg-secondarydark">
+      {{ range .WorkoutPlans }}
+        <option value="{{ .Name }}">{{ .Name }}</option>
+      {{ end }}
+      </select>
+      {{ template "add_workout_planned_form" . }}    
+    {{ else }}
+      <p>No Planned Workouts</p>
     {{ end }}
-    </select>
-    {{ template "add_workout_planned_form" . }}    
 {{ end }}
 
 {{ define "add_workout_planned_form"}}
@@ -269,17 +316,21 @@
       <div id="add_workout_form_data_feature" data-feature="add-workout-planned">
         <form id="workoutForm" hx-post="/htmx/workouts" hx-target="#add_workout_form_div" hx-swap="outerHTML" method="POST" hx-include="#add-workout-type-select, #add-workout-plan-select">
             <!-- Dynamic Inputs for Exercise Details (Dropdown Name and Value) -->
+            <br />
+            <input type="hidden" value="WorkoutPlan" name="type"/>
             <div id="workoutDetails" class="form-group">
-                <br />
-                <div class="flex gap-4">
-                  <div>
-                    <label for="addworkout-start-time">Workout Start Time</label>
-                    <br/>
-                    <input type="datetime-local" min="2026-01-01T00:00" value="2026-01-01T00:00" name="workout-start-time" id="addworkout-start-time"/> 
+                <div class="flex gap-40 justify-between mx-15">
+                  <div class="w-64 flex flex-col">
+                    <div class="flex justify-center">
+                      <label for="addworkout-start-time">Workout Start Time</label>
+                    </div>
+                    <input class="border rounded-sm" type="datetime-local" min="2026-01-01T00:00" value="2026-01-01T00:00" name="workout-start-time" id="addworkout-start-time"/> 
                   </div>
-                  <div>
-                    <label for="addworkout-end-time">Workout End Time</label>
-                    <input type="datetime-local" min="2026-01-01T00:00" value="2026-01-01T00:00" name="workout-end-time" id="addworkout-end-time"/> 
+                  <div class="w-64 flex flex-col">
+                    <div class="justify-center flex">
+                      <label for="addworkout-end-time">Workout End Time</label>
+                    </div>
+                      <input class="border rounded-sm" type="datetime-local" min="2026-01-01T00:00" value="2026-01-01T00:00" name="workout-end-time" id="addworkout-end-time"/> 
                   </div>
                 </div>
                 <br />
@@ -304,50 +355,67 @@
                 <!-- The first exercise detail will be added dynamically by JavaScript -->
             </div>
             <!-- Add Button -->
-            <button type="button" id="addworkout-add-input-button" class="add-btn">+ Add Set</button>
             <br><br>
-            <button type="submit" class="btn-primary">Submit</button>
+            <button type="submit" class="bg-submitbutton box-border border hover:bg-submitbutton-strong focus:ring-1 focus:ring-black shadow-xs font-medium leading-5 rounded-sm text-sm px-4 py-1 focus:outline-none">Submit</button>
         </form>
       </div>
     </div>
 {{ end }}
 
-{{ define "add_workout_form_custom" }}
-<div id="add_workout_form_data_feature" data-feature="add-workout-custom">
-      <script type="application/json" id="addworkout-data">
-        {
-          "detailNames": {{.ExercisesJson}}
-        }
-      </script>
-      <form id="workoutForm" hx-post="/htmx/workouts" hx-target="#add_workout_form_div" hx-swap="outerHTML" method="POST" hx-include="#add-workout-type-select, #add-workout-plan-select">
-          <!-- Dynamic Inputs for Exercise Details (Dropdown Name and Value) -->
-          <div id="workoutDetails" class="form-group">
-              <br />
-              <label for="addworkout-start-time">Workout Start Time</label>
-              <input type="datetime-local" min="2026-01-01T00:00" value="2026-01-01T00:00" name="workout-start-time" id="addworkout-start-time"/> 
-              <br />
-              <label for="addworkout-end-time">Workout End Time</label>
-              <input type="datetime-local" min="2026-01-01T00:00" value="2026-01-01T00:00" name="workout-end-time" id="addworkout-end-time"/> 
-              <br />
-              <br />
-              <h3>Exercises</h3>
-              <div id="addworkout-detail-collection">
-                
-              </div>
-              <!-- The first exercise detail will be added dynamically by JavaScript -->
-          </div>
-          <!-- Add Button -->
-          <button type="button" id="addworkout-add-input-button" class="add-btn">+ Add Set</button>
-          <br><br>
-          <button type="submit" class="add-btn">Submit</button>
-      </form>
-    </div>
+{{ define "add_workout_custom_form" }}
+<a href="/addworkout" class="underline">Back</a>
+<br>
+<br>
+<div id="add_workout_custom_form" />
+  <div id="add_workout_form_data_feature" data-feature="add-workout-custom">
+    <script type="application/json" id="addworkout-data">
+      {
+        "detailNames": {{.ExercisesJson}}
+      }
+    </script>
+    <form id="workoutForm" hx-post="/htmx/workouts" hx-target="#add_workout_form_div" hx-swap="outerHTML" method="POST" hx-include="#add-workout-type-select, #add-workout-plan-select">
+        <!-- Dynamic Inputs for Exercise Details (Dropdown Name and Value) -->
+        <input type="hidden" value="Custom" name="type" />
+        <div id="workoutDetails" class="form-group">
+            <br />
+                <div class="flex gap-40 justify-between mx-15">
+                  <div class="w-64 flex flex-col">
+                    <div class="flex justify-center">
+                      <label for="addworkout-start-time">Workout Start Time</label>
+                    </div>
+                    <input class="border rounded-sm" type="datetime-local" min="2026-01-01T00:00" value="2026-01-01T00:00" name="workout-start-time" id="addworkout-start-time"/> 
+                  </div>
+                  <div class="w-64 flex flex-col">
+                    <div class="justify-center flex">
+                      <label for="addworkout-end-time">Workout End Time</label>
+                    </div>
+                      <input class="border rounded-sm" type="datetime-local" min="2026-01-01T00:00" value="2026-01-01T00:00" name="workout-end-time" id="addworkout-end-time"/> 
+                  </div>
+                </div>
+            <br />
+            <br />
+            <h3>Exercises</h3>
+            <div id="addworkout-detail-collection">
+              
+            </div>
+            <!-- The first exercise detail will be added dynamically by JavaScript -->
+        </div>
+        <!-- Add Button -->
+        <button type="button" id="addworkout-add-input-button" class="add-btn">+ Add Set</button>
+        <br><br>
+        <button type="submit" class="bg-submitbutton box-border border hover:bg-submitbutton-strong focus:ring-1 focus:ring-black shadow-xs font-medium leading-5 rounded-sm text-sm px-4 py-1 focus:outline-none">Submit</button>
+    </form>
+  </div>
+</div>
 {{ end }}
 
 {{ define "graph_page" }}
-  <div id="graph_page_div" >
-    {{ template "graph_dataset" . }}
+  <div id="graph-div" class="text-primarylight p-5 w-7xl justify-center" >
+    <div class="flex justify-center">
+      <h2 class="text-2xl font-bold mb-4">Graphs</h2>
+    </div>
     {{ template "graph_chart" .}}
+    {{ template "graph_dataset" . }}
   </div>
 {{ end }}
 <!--
@@ -408,23 +476,27 @@
   -->
 
 {{ define "graph_dataset" }}
-  <div id="graph_dataset_list">
-    <h3>DataSets</h3>
-    {{ template "graph_dataset_info" .}}
-    <form id="add_new_dataset" hx-get="/htmx/graphs" hx-target="#graph_chart_div" hx-swap="outerHTML">
-      <select name="graph-dataset-calctype-select" hx-get="/htmx/graph_calctype_option" hx-trigger="change" hx-target="#graph-dataset-calctype-option-select" hx-swap="outerHTML">
-        {{ range .CalcTypes }}
-        <option>{{ . }}</option>
-        {{ end }}
-      </select>
-      {{ template "graph_dataset_calctype_option" .GraphDatasetOptions }}
-      <button type="submit">Submit</button>
-    </form>
+  <div id="graph_dataset_list" class="bg-primarydark m-1 flex flex-col">
+    <div class="flex justify-center">
+      <h3>Select Graph Parameters</h3>
+    </div>
+    <div class="flex justify-center">
+      {{ template "graph_dataset_info" .}}
+      <form id="add_new_dataset" hx-get="/htmx/graphs" hx-target="#graph_chart_div" hx-swap="outerHTML">
+        <select name="graph-dataset-calctype-select" hx-get="/htmx/graph_calctype_option" hx-trigger="change" hx-target="#graph-dataset-calctype-option-select" hx-swap="outerHTML" class="mr-4 rounded-sm border bg-secondarydark">
+          {{ range .CalcTypes }}
+          <option>{{ . }}</option>
+          {{ end }}
+        </select>
+        {{ template "graph_dataset_calctype_option" .GraphDatasetOptions }}
+        <button type="submit" class="bg-submitbutton box-border border hover:bg-submitbutton-strong focus:ring-1 focus:ring-black shadow-xs font-medium leading-5 rounded-sm text-sm px-4 py-1 focus:outline-none">Submit</button>
+      </form>
+    </div>
   </div>
 {{ end }}
 
 {{ define "graph_dataset_calctype_option" }}
-    <select name="graph-dataset-calctype-option-select" id="graph-dataset-calctype-option-select">
+    <select name="graph-dataset-calctype-option-select" id="graph-dataset-calctype-option-select" class="mr-4 rounded-sm border bg-secondarydark">
       {{ range . }}
         <option value="{{.}}">{{.}}</option>
       {{ end }}
@@ -435,10 +507,6 @@
   <div id="graph-dataset-info" hx-swap-oob="true">
     {{ range .ChartDataSets }}
     <div id="dataset_list_item">
-      <p>
-      {{.CalcType}}: {{ .Label }}
-      <!-- <button type="button" hx-delete="/htmx/graphs" hx-include="#graph_dataset_list_div div:not(#dataset_list_item_{{.CalcType}}_{{.Label}})">Remove</button> -->
-      </p>
       <input type="hidden" name="CalcType" value="{{.CalcType}}">
       <input type="hidden" name="Label" value="{{.Label}}">
     </div>
@@ -446,8 +514,27 @@
   </div>
 {{ end }}
 
+{{ define "graph_dataset_title" }}
+  <div id="graph-dataset-info">
+    {{ range .ChartDataSets }}
+    <div id="dataset_list_item">
+      <p>
+      {{.CalcType}}: {{ .Label }}
+      <!-- <button type="button" hx-delete="/htmx/graphs" hx-include="#graph_dataset_list_div div:not(#dataset_list_item_{{.CalcType}}_{{.Label}})">Remove</button> -->
+      </p>
+    </div>
+    {{ end }}
+  </div>
+{{ end }}
+
+
 {{ define "graph_chart" }}
-  <div id="graph_chart_div" >
+  <div id="graph_chart_div" class="bg-primarydark m-1 p-4">
+    <div class="flex justify-center">
+      <div class="text-xl mb-4">
+      {{ template "graph_dataset_title" .}}
+      </div>
+    </div>
     <div id="graph-chart-data-feature" data-feature="graph-chart">
       <script type="application/json" id="graph-chart-json-data">
           {{ .ChartDataSetsJson }}  
@@ -487,76 +574,230 @@
     </script>
 -->
 
+
+
 {{ define "workoutsummary_page" }}
   <div id="workoutsummary-page-div">
-    {{ range .WorkoutSummary }}           
-      <div id="workoutsummary-item">
-        <h3>Start Time: {{ .StartTime }}  Duration: {{ .Duration }}</h3>
-        <h4>Sets</h4>
-        {{ range .Sets }}
-          <p><b>{{ .ExerciseName }}:</b> Reps = {{ .Reps }} ; Partial Reps = {{ .PartialReps }} Weight = {{ .Weight }}</p>
-        {{ end }}
-        <h4>Exercise Volume</h4>
-        {{ range .ExerciseVolume }}
-          <p><b>{{ .Label }}:</b> Volume = {{ .Data }}</p>
-        {{ end }}
-        <h4>Muscle Volume</h4>
-        {{ range .MuscleVolume }}
-          <p><b>{{ .Label }}:</b> Volume = {{ .Data }}</p>
-        {{ end }}
+    <div class="accordian-container">
+      {{ range .WorkoutSummary }}
+        <div class="w-7xl justify-center">
+        {{ template "workoutsummary_item" . }}
+        </div>
+      {{ end }}
+    </div>
+  </div> 
+{{ end }}
+
+{{ define "workoutsummary_item" }}
+  <div id="workout-summary-item" class="accordian sub-accordian-container text-primarylight text-sm w-full flex justify-center flex-col transition-all duration-500" data-feature="accordian">
+    <div class="accordian-header p-4 font-bold bg-slate-900 flex justify-between items-center cursor-pointer">
+      <div>{{ .StartTime }}</div>
+      <div>{{ .WorkoutPlan }}</div>
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 active-icon">
+        <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" />
+      </svg>
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 inactive-icon">
+        <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+      </svg>
+    </div>
+    <div class="accordian-content transition-all duration-500 overflow-hidden">
+      <div class="accordian-item p-4 bg-violet-400 justify-between flex">
+        <div>Duration:</div>
+        <div>{{ .Duration }}</div>
       </div>
-    {{ end }}
+      <div class="accordian-item">
+        <div id="workout-summary-sub-item" class="sub-accordian text-primarylight text-sm w-full flex justify-center flex-col transition-all duration-500" data-feature="sub-accordian">
+          <div class="sub-accordian-header p-4 font-bold bg-green-400 flex justify-between items-center cursor-pointer">
+            <div>
+              Muscle Volume
+            </div>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 sub-active-icon">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" />
+            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 sub-inactive-icon">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+            </svg>
+          </div>
+          <div class="sub-accordian-content transition-all duration-500 overflow-hidden">
+            {{ range $index, $element := .MuscleVolume }}
+            <div class="sub-accordian-item p-4 {{if eq (mod $index 2) 0}}bg-slate-800{{else}}bg-slate-700{{end}} justify-between flex">
+              <div>{{ $element.Label }}</div>
+              <div>{{ $element.Data }}</div>
+            </div>
+            {{ end }}
+          </div>
+        </div>
+      </div>
+      <div class="accordian-item">
+        <div id="workout-summary-sub-item" class="sub-accordian text-primarylight text-sm w-full flex justify-center flex-col transition-all duration-500" data-feature="sub-accordian">
+          <div class="sub-accordian-header p-4 font-bold bg-indigo-500 flex justify-between items-center cursor-pointer">
+            <div>
+              Exercise Volume
+            </div>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 sub-active-icon">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" />
+            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 sub-inactive-icon">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+            </svg>
+          </div>
+          <div class="sub-accordian-content transition-all duration-500 overflow-hidden">
+            {{ range $index, $element := .ExerciseVolume }}
+            <div class="sub-accordian-item p-4 {{if eq (mod $index 2) 0}}bg-slate-800{{else}}bg-slate-700{{end}} justify-between flex">
+              <div>{{ $element.Label }}</div>
+              <div>{{ $element.Data }}</div>
+            </div>
+            {{ end }}
+          </div>
+        </div>
+      </div>
+      <div class="accordian-item">
+        <div id="workout-summary-sub-item" class="sub-accordian text-primarylight text-sm w-full flex justify-center flex-col transition-all duration-500" data-feature="sub-accordian">
+          <div class="sub-accordian-header p-4 font-bold bg-red-600 flex justify-between items-center cursor-pointer">
+            <div>
+              Sets
+            </div>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 sub-active-icon">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" />
+            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 sub-inactive-icon">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+            </svg>
+          </div>
+          <div class="sub-accordian-content transition-all duration-500 overflow-hidden">
+            {{ range $index, $element := .Sets }}
+            <div class="sub-accordian-item p-4 {{if eq (mod $index 2) 0}}bg-slate-800{{else}}bg-slate-700{{end}} justify-between flex">
+              <div>{{ $element.ExerciseName }}</div>
+              <div>Weight: {{ $element.Weight }}</div>
+              <div>Reps: {{ $element.Reps }}</div>
+              <div>Partial Reps: {{ $element.PartialReps }}</div>
+            </div>
+            {{ end }}
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 {{ end }}
 
-{{ define "workoutplans_page" }}
- <div id="workoutplans-page-div">
-    <h2>Add new Workout Plan</h2>
-      <div id="workoutplans-new">
-        <div id="workoutplans-new-data-feature" data-feature="add-workoutplan">
-          <script type="application/json" id="add-workoutplan-data">
-            {
-              "detailNames": {{.ExercisesJson}}
-            }
-          </script>
-          <h2>Workout Form</h2>
-          <form id="workoutplan-new-form" hx-post="/htmx/workoutplans" hx-target="#workoutplans-new" hx-swap="outerHTML" method="POST">
-            <!-- Dynamic Inputs for Exercise Details (Dropdown Name and Value) -->
-            <label for="workoutplan-new-name">Plan Name</label>
-            <input type="text" name="workoutplan-new-name" placeholder="Enter Name Here">
-            <br />
-            <h3>Sets</h3>
-            <div id="workoutplans-new-form-set-collection">
 
-            </div>  
-                <!-- The first exercise detail will be added dynamically by JavaScript -->
-            <!-- Add Button -->
-            <button type="button" id="workoutplans-new-form-input-button" class="add-btn">+ Add Set</button>
-            <br><br>
-            <button type="submit" class="add-btn">Submit</button>
-          </form>
-        </div> 
-      </div> 
-    <h2>WorkoutPlans</h2> 
-      <div id="workoutplan-list">
-        {{ if .WorkoutPlans }}
-          {{ range .WorkoutPlans }}
-            <h3>{{ .Name }}</h3>
-            {{ range .SetCollections }}
-              {{ if eq .Format  "ConstantRepsAndConstantSets" }}
-              <p>Do <b>{{ .ExerciseName }}</b> for <b>{{(index .RepRange 0).Lower}} - {{(index .RepRange 0).Upper}}</b> reps with <b>{{index .RIRs 0}}</b> RIR for <b>{{ .NumberOfSets }}</b> sets</p>
-              {{ else if eq .Format "ConstantReps" }}
-              <p>Do <b>{{ .ExerciseName }}</b> for <b>{{(index .RepRange 0).Lower}} - {{(index .RepRange 0).Upper}}</b> reps with {{ range $i, $e := .RIRs }}{{ if $i }}, {{ end }}<b>{{ $e }}</b>{{ end }} RIR</p>
-              {{ else if eq .Format  "ConstantWeight" }}
-              <p>Do <b>{{ .ExerciseName }}</b> for {{ range $i, $e := .RepRange }}{{ if $i}}, {{end}}<b>{{ $e.Lower }} - {{ $e.Upper }}</b>{{ end }} with <b>{{ index .RIRs 0 }}</b> RIR</p>
-              {{ else if eq .Format  "NeitherConstant" }}
-              <p>Do <b>{{ .ExerciseName }}</b> for {{ range $i, $e := .RepRange }}{{if $i}}, {{ end }}<b>{{ $e.Lower }} - {{ $e.Upper }}</b>{{ end }} with {{range $i, $e := .RIRs }}{{if $i}}, {{ end }}<b>{{ $e }}</b>{{ end }} RIR</p>
-              {{ end }}
-            {{ end }}
-          {{ end }}
-        {{ else }}
-          <p>No workout plans</p>
+{{ define "workoutsummary_sub_item" }}
+  <div id="workout-summary-sub-item" class="sub-accordian text-primarylight text-sm w-full flex justify-center flex-col transition-all duration-500" data-feature="sub-accordian">
+    <div class="sub-accordian-header p-4 font-bold bg-slate-900 flex justify-between items-center cursor-pointer">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 sub-active-icon">
+        <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" />
+      </svg>
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 sub-inactive-icon">
+        <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+      </svg>
+    </div>
+    <div class="sub-accordian-content transition-all duration-500 overflow-hidden">
+      {{ range $index, $element := . }}
+      <div class="sub-accordian-item p-4 {{if eq (mod $index 2) 0}}bg-slate-800{{else}}bg-slate-700{{end}} justify-between flex">
+        <div>{{ $element.Label }}</div>
+        <div>{{ $element.Data }}</div>
+      </div>
+      {{ end }}
+    </div>
+  </div>
+{{ end }}
+
+
+
+{{ define "workoutplans_page" }}
+  <div id="workoutplans-page-div" class="text-primarylight p-5 w-7xl justify-center">
+    <div class="flex justify-center">
+      <h2 class="text-2xl font-bold mb-4">Add Workout Page</h2>
+    </div>
+    <div id="addexercise-main-div" class="">
+      {{ template "add_workoutplan_form" . }}
+      {{ if .Exercises }}
+        {{ template "add_workoutplan_list" . }}
+      {{ else }}
+        <p>No exercises found</p>
+      {{ end }}
+    </div>
+  </div>
+{{ end }}
+
+<!--
+
+      {
+        "detailNames": [
+          {{- range $i, $m := .Muscles -}}
+            {{- if $i }},{{ end -}}
+            {{ $m | js }}
+          {{- end -}}
+        ]
+      }
+-->
+
+{{ define "add_workoutplan_form" }} 
+  <div id="add_exercise_form_div" class="container bg-primarydark m-1 p-4 mb-4">
+    <div id="workoutplan-add-datafeature"  data-feature="add-workoutplan">
+      <script type="application/json" id="addworkoutplan-data">
+        {
+        "detailNames": {{ .ExercisesJson }}
+        }
+      </script>
+        <div class="flex justify-center">
+          <h2 class="text-xl font-bold mb-4">Add Workout Plan</h2>
+        </div>
+      <form id="workoutplan-new-form" hx-post="/htmx/workoutplans" hx-target="#workoutplans-page-div" hx-swap="outerHTML" method="POST">
+        <!-- Dynamic Inputs for Exercise Details (Dropdown Name and Value) -->
+        <label for="workoutplan-new-name" class="mr-2">Name:</label>
+        <input class="border" type="text" id="workoutplan-new-name" name="newWorkoutPlanName" required placeholder="Enter name">
+        <br />
+        <div id="workoutplans-new-form-set-collection" class="gap-8 mt-4 justify-between">
+        </div>  
+            <!-- The first exercise detail will be added dynamically by JavaScript -->
+        <!-- Add Button -->
+        <button type="button" id="workoutplans-new-form-input-button" class="add-btn">+ Add Set</button>
+        <br><br>
+        <button type="submit" class="bg-submitbutton box-border border hover:bg-submitbutton-strong focus:ring-1 focus:ring-black shadow-xs font-medium leading-5 rounded-sm text-sm px-4 py-1 focus:outline-none">Submit</button>
+      </form>
+    </div>
+  </div>
+{{ end }}
+
+{{ define "add_workoutplan_list" }}
+  <div id="exercise-list" class="bg-primarydark m-1 p-4">
+    <div class="flex justify-center">
+      <h2 class="text-xl font-bold mb-4">Exercises</h2>
+    </div>
+    <div class="flex flex-col gap-1 bg-slate-800 rounded-lg overflow-hidden accordian-container">
+    {{ range .WorkoutPlans }}
+      {{ template "workoutplan_item" . }}
+    {{ end }}
+    </div>
+  </div>
+{{ end }}
+
+{{ define "workoutplan_item" }}
+  <div id="exercise-list-item" class="accordian text-primarylight text-sm w-full flex justify-center flex-col transition-all duration-500" data-feature="accordian">
+    <div class="accordian-header p-4 font-bold bg-slate-900 flex justify-between items-center cursor-pointer">
+      <div>{{ .Name }}</div>
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 active-icon">
+        <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" />
+      </svg>
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 inactive-icon">
+        <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+      </svg>
+    </div>
+    <div class="accordian-content transition-all duration-500 overflow-hidden">
+      {{ range $index, $element := .SetCollections }}
+      <div class="accordian-item p-4 {{if eq (mod $index 2) 0}}bg-slate-800{{else}}bg-slate-700{{end}} justify-between flex">
+        {{ if eq .Format  "ConstantRepsAndConstantSets" }}
+        <p>Do <b>{{ .ExerciseName }}</b> for <b>{{(index .RepRange 0).Lower}} - {{(index .RepRange 0).Upper}}</b> reps with <b>{{index .RIRs 0}}</b> RIR for <b>{{ .NumberOfSets }}</b> sets</p>
+        {{ else if eq .Format "ConstantReps" }}
+        <p>Do <b>{{ .ExerciseName }}</b> for <b>{{(index .RepRange 0).Lower}} - {{(index .RepRange 0).Upper}}</b> reps with {{ range $i, $e := .RIRs }}{{ if $i }}, {{ end }}<b>{{ $e }}</b>{{ end }} RIR</p>
+        {{ else if eq .Format  "ConstantWeight" }}
+        <p>Do <b>{{ .ExerciseName }}</b> for {{ range $i, $e := .RepRange }}{{ if $i}}, {{end}}<b>{{ $e.Lower }} - {{ $e.Upper }}</b>{{ end }} with <b>{{ index .RIRs 0 }}</b> RIR</p>
+        {{ else if eq .Format  "NeitherConstant" }}
+        <p>Do <b>{{ .ExerciseName }}</b> for {{ range $i, $e := .RepRange }}{{if $i}}, {{ end }}<b>{{ $e.Lower }} - {{ $e.Upper }}</b>{{ end }} with {{range $i, $e := .RIRs }}{{if $i}}, {{ end }}<b>{{ $e }}</b>{{ end }} RIR</p>
         {{ end }}
       </div>
+      {{ end }}
+    </div>
   </div>
 {{ end }}

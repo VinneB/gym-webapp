@@ -60,6 +60,7 @@ type WorkoutInstance struct {
 	UserEmail string    `db:"user_email"`
 	StartTime time.Time `db:"start_time"`
 	EndTime   time.Time `db:"end_time"`
+	PlanName  string    `db:"plan_name"`
 }
 
 var Muscles = []string{"Abs", "Biceps", "Calves", "Forearms", "Front Delts", "Glutes", "Hamstrings", "Lats", "Lower Back", "Pectorals", "Quads", "Rear Delts", "Rhomboids", "Side Delts", "Traps", "Triceps"}

@@ -27,6 +27,12 @@ func NewTemplate() *Templates {
 			// Return as html.HTML to prevent further escaping
 			return template.HTML(buf.String()), nil
 		},
+		"mod": func(i, j int) int {
+			return i % j
+		},
+		"mult": func(i, j float32) int {
+			return int(i * j)
+		},
 	})
 	t, err := t.ParseGlob("pages/template_test.html")
 	if err != nil {

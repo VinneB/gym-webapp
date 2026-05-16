@@ -41,18 +41,29 @@ export function initAddWorkoutCustom(root) {
 function createWorkoutInput(container, detailNames) {
   const workoutDetails = container.querySelector("#addworkout-detail-collection")
   const newInputGroup = document.createElement("div");
-  newInputGroup.classList.add("exercise-inputs");
 
-  // Create a label for the select field (Detail Name)
-  const newNameLabel = document.createElement("label");
-  newNameLabel.textContent = "Exercise";
-  newNameLabel.setAttribute("for", "exerciseName");
+  const newInputGroupInputs = document.createElement("div")
+  newInputGroup.classList.add("mb-5");
+
+  // Tailwind on input div
+  newInputGroupInputs.classList.add("border");
+  newInputGroupInputs.classList.add("rounded-sm");
+  newInputGroupInputs.classList.add("p-2");
+
+  // // Create a label for the select field (Detail Name)
+  // const newNameLabel = document.createElement("label");
+  // newNameLabel.textContent = "Exercise";
+  // newNameLabel.setAttribute("for", "exerciseName");
 
   // Create new select element with static options
   const newNameSelect = document.createElement("select");
   newNameSelect.setAttribute("name", "exerciseName");
   newNameSelect.setAttribute("id", "exerciseName");
   newNameSelect.required = true;
+  newNameSelect.classList.add("mr-4")
+  newNameSelect.classList.add("border")
+  newNameSelect.classList.add("rounded-sm")
+  newNameSelect.classList.add("bg-secondarydark")
 
   // Add default "Select Detail" option
   const defaultOption = document.createElement("option");
@@ -71,8 +82,9 @@ function createWorkoutInput(container, detailNames) {
   // Rep Field
 
   const newRepLabel = document.createElement("label");
-  newRepLabel.textContent = "Reps";
+  newRepLabel.textContent = "Reps:";
   newRepLabel.setAttribute("for", "repAmount");
+  newRepLabel.classList.add("mr-1")
 
   const newRepInput = document.createElement("input");
   newRepInput.setAttribute("type", "number");
@@ -84,12 +96,16 @@ function createWorkoutInput(container, detailNames) {
   newRepInput.setAttribute("placeholder", "# Reps");
   newRepInput.setAttribute("step", "1");
   newRepInput.required = true;
+  newRepInput.classList.add("mr-4")
+  newRepInput.classList.add("rounded-sm")
+  newRepInput.classList.add("border")
 
   // Weight Field
 
   const newWeightLabel = document.createElement("label");
-  newWeightLabel.textContent = "Weight";
+  newWeightLabel.textContent = "Weight: ";
   newWeightLabel.setAttribute("for", "weightAmount");
+  newWeightLabel.classList.add("mr-1")
 
   const newWeightInput = document.createElement("input");
   newWeightInput.setAttribute("type", "number");
@@ -101,12 +117,16 @@ function createWorkoutInput(container, detailNames) {
   newWeightInput.setAttribute("placeholder", "Weight");
   newWeightInput.setAttribute("step", "0.05");
   newWeightInput.required = true;
+  newWeightInput.classList.add("mr-4")
+  newWeightInput.classList.add("border")
+  newWeightInput.classList.add("rounded-sm")
 
   // Partial Reps
 
   const newPartialRepLabel = document.createElement("label");
-  newPartialRepLabel.textContent = "Partial Reps";
+  newPartialRepLabel.textContent = "Partial Reps:";
   newPartialRepLabel.setAttribute("for", "partialRepAmount");
+  newPartialRepLabel.classList.add("mr-1")
 
   const newPartialRepInput = document.createElement("input");
   newPartialRepInput.setAttribute("type", "number");
@@ -118,12 +138,17 @@ function createWorkoutInput(container, detailNames) {
   newPartialRepInput.setAttribute("placeholder", "# Partial Reps");
   newPartialRepInput.setAttribute("step", "1");
   newPartialRepInput.required = true;
+  newPartialRepInput.classList.add("mr-4")
+  newPartialRepInput.classList.add("rounded-sm")
+  newPartialRepInput.classList.add("border")
+
 
   // Number of Sets
 
   const newSetCountLabel = document.createElement("label");
-  newSetCountLabel.textContent = "Number of Sets";
+  newSetCountLabel.textContent = "Number of Sets:";
   newSetCountLabel.setAttribute("for", "setAmount");
+  newSetCountLabel.classList.add("mr-1")
 
   const newSetCountInput = document.createElement("input");
   newSetCountInput.setAttribute("type", "number");
@@ -135,6 +160,9 @@ function createWorkoutInput(container, detailNames) {
   newSetCountInput.setAttribute("placeholder", "# Sets");
   newSetCountInput.setAttribute("step", "1");
   newSetCountInput.required = true;
+  newSetCountInput.classList.add("mr-4")
+  newSetCountInput.classList.add("border")
+  newSetCountInput.classList.add("rounded-sm")
 
   // Workout Start time
 
@@ -142,8 +170,9 @@ function createWorkoutInput(container, detailNames) {
   const startTimeString = startTimeInput.value.slice(11, 16)
 
   const newTimeLabel = document.createElement("label");
-  newTimeLabel.textContent = "Start Time";
+  newTimeLabel.textContent = "Start Time: ";
   newTimeLabel.setAttribute("for", "startTime");
+  newTimeLabel.classList.add("mr-1")
 
   const newTimeInput = document.createElement("input");
   newTimeInput.setAttribute("type", "time");
@@ -151,12 +180,29 @@ function createWorkoutInput(container, detailNames) {
   newTimeInput.setAttribute("name", "startTime");
   newTimeInput.setAttribute("id", "startTime");
   newTimeInput.required = true;
+  newTimeInput.classList.add("mr-4")
+  newTimeInput.classList.add("border")
+  newTimeInput.classList.add("rounded-sm")
 
   // Create a remove button
   const removeButton = document.createElement("button");
   removeButton.type = "button";
   removeButton.textContent = "Remove";
-  removeButton.classList.add("remove-btn");
+  removeButton.classList.add("bg-deletebutton");
+  removeButton.classList.add("box-border");
+  removeButton.classList.add("border");
+  removeButton.classList.add("hover:bg-deletebutton-strong");
+  removeButton.classList.add("focus:ring-1");
+  removeButton.classList.add("focus:ring-black");
+  removeButton.classList.add("shadow-xs");
+  removeButton.classList.add("shadow-xs");
+  removeButton.classList.add("leading-5");
+  removeButton.classList.add("rounded-sm");
+  removeButton.classList.add("text-sm");
+  removeButton.classList.add("px-4");
+  removeButton.classList.add("py-1");
+  removeButton.classList.add("focus:outline-none");
+
 
   // Add remove functionality
   removeButton.addEventListener("click", function() {
@@ -164,18 +210,19 @@ function createWorkoutInput(container, detailNames) {
   });
 
   // Append the labels, select, input fields, and remove button to the new group
-  newInputGroup.appendChild(newNameLabel);
-  newInputGroup.appendChild(newNameSelect);
-  newInputGroup.appendChild(newTimeLabel);
-  newInputGroup.appendChild(newTimeInput);
-  newInputGroup.appendChild(newWeightLabel);
-  newInputGroup.appendChild(newWeightInput);
-  newInputGroup.appendChild(newRepLabel);
-  newInputGroup.appendChild(newRepInput);
-  newInputGroup.appendChild(newPartialRepLabel);
-  newInputGroup.appendChild(newPartialRepInput);
-  newInputGroup.appendChild(newSetCountLabel);
-  newInputGroup.appendChild(newSetCountInput);
+  //newInputGroup.appendChild(newNameLabel);
+  newInputGroup.appendChild(newInputGroupInputs);
+  newInputGroupInputs.appendChild(newNameSelect);
+  newInputGroupInputs.appendChild(newTimeLabel);
+  newInputGroupInputs.appendChild(newTimeInput);
+  newInputGroupInputs.appendChild(newWeightLabel);
+  newInputGroupInputs.appendChild(newWeightInput);
+  newInputGroupInputs.appendChild(newRepLabel);
+  newInputGroupInputs.appendChild(newRepInput);
+  newInputGroupInputs.appendChild(newPartialRepLabel);
+  newInputGroupInputs.appendChild(newPartialRepInput);
+  newInputGroupInputs.appendChild(newSetCountLabel);
+  newInputGroupInputs.appendChild(newSetCountInput);
 
   newInputGroup.appendChild(removeButton);
 

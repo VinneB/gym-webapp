@@ -182,6 +182,7 @@ func getData(r *http.Request) (structapi.Data, error) {
 				ExerciseVolume: exerciseVolumeByWorkoutIdMap[workout.Id],
 				MuscleVolume:   muscleVolumeByWorkoutIdMap[workout.Id],
 				Duration:       util.WorkoutDuration(workout),
+				WorkoutPlan:    workout.PlanName,
 			}
 			data.WorkoutSummary = append(data.WorkoutSummary, workoutSummary)
 		}

@@ -2,12 +2,16 @@ import { initAddExercise } from "./features/addExercise.js"
 import { initAddWorkoutCustom } from "./features/addWorkoutCustom.js"
 import { initRenderGraph } from "./features/renderGraph.js"
 import { initAddWorkoutPlan } from "./features/addWorkoutPlan.js"
+import { initAccordian } from "./features/accordian.js"
+import { initSubAccordian } from "./features/sub-accordian.js"
 
 const features = [
   initAddExercise,
   initAddWorkoutCustom,
   initRenderGraph,
   initAddWorkoutPlan,
+  initAccordian,
+  initSubAccordian,
 ]
 
 function initFeatures(root) {

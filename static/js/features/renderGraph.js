@@ -35,7 +35,11 @@ export function initRenderGraph(root) {
 }
 
 function createChart(container, dataset_label, dataset, labels) {
-  let chart = container.querySelector('#graph-chart-canvas').getContext('2d');
+  let canvas = container.querySelector('#graph-chart-canvas')
+  if (Chart.getChart(canvas)) {
+    Chart.getChart(canvas).destroy()
+  }
+  let chart = canvas.getContext('2d');
   let chartData = new Chart(chart, {
     type: 'line',
     data: {
