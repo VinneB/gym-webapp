@@ -80,3 +80,21 @@ func MuscleFractionsToMap(muscleFractions []MuscleFraction) map[string]MuscleFra
 	}
 	return muscleFractionMap
 }
+
+type LiveWorkoutSession struct {
+	Id        int
+	UserEmail string
+	StartTime time.Time
+	EndTime   time.Time
+	PlanName  string
+	Sets      []Set
+}
+
+type LiveWorkoutSessionSqlForm struct {
+	Id        int       `db:"id"`
+	UserEmail string    `db:"user_email"`
+	StartTime time.Time `db:"start_time"`
+	EndTime   time.Time `db:"end_time"`
+	PlanName  string    `db:"plan_name"`
+	Sets      string    `db:"data"`
+}

@@ -279,6 +279,7 @@
         <label for="add-workout-type-select">Select a workout format :</label>
         <select name="type" id="add-workout-type-select" class="border rounded-sm bg-secondarydark">
           <option value="WorkoutPlan" {{ if eq .WorkoutInstanceType "PlanWorkout"}}selected="selected"{{ end }}>Planned Workout</option>
+          <option value="LiveWorkoutPlan" {{ if eq .WorkoutInstanceType "LivePlanWorkout"}}selected="selected"{{ end }}>Live Planned Workout</option>
           <option value="Custom" {{ if eq .WorkoutInstanceType "Custom"}}selected="selected"{{ end }}>Custom Workout</option>
         </select>
         <br/><br/>
@@ -291,7 +292,35 @@
     {{ template "add_workout_custom_form" . }}
   {{ else if eq .WorkoutInstanceType "WorkoutPlan" }}
     {{ template "add_workout_planned" . }}
+  {{ else if eq .WorkoutInstanceType "LiveWorkoutPlan" }}
+    {{ template "add_workout_live_planned_select" . }}
   {{ end }}
+  </div>
+{{ end }}
+
+{{ define "add_workout_live_planned_select" }}
+    <a href="/addworkout" class="underline">Back</a>
+    <br>
+    <br>
+    {{ if .WorkoutPlans }}
+      <select  name="plan" id="add-workout-plan-select" class="border rounded-sm bg-secondarydark">
+      {{ range .WorkoutPlans }}
+        <option value="{{ .Name }}">{{ .Name }}</option>
+      {{ end }}
+      </select>
+      <button hx-get="/liveworkout" hx-include="#add-workout-plan-select" type="submit" class="bg-submitbutton box-border border hover:bg-submitbutton-strong focus:ring-1 focus:ring-black shadow-xs font-medium leading-5 rounded-sm text-sm px-4 py-1 focus:outline-none">Start Workout</button>
+    </form>
+    {{ else }}
+      <p>No Planned Workouts</p>
+    {{ end }}
+{{ end }}
+
+
+{{ define "add_workout_live_planned_select" }}
+  <div>
+    {{ range (index .WorkoutPlans 0).Sets }}
+    <a>test</a>
+    {{ end }}
   </div>
 {{ end }}
 

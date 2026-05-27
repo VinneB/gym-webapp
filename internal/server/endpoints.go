@@ -316,3 +316,19 @@ func AddWorkoutSelectPlanGetHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(r.Form)
 	middleware.NewTemplate().Render(w, "add_workout_planned_form", data)
 }
+
+func AddWorkoutSelectPlanLiveGetHandler(w http.ResponseWriter, r *http.Request) {
+	data, err := getData(r)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	data.WorkoutInstanceType = r.FormValue("type")
+	r.ParseForm()
+	fmt.Println(r.Form)
+	middleware.NewTemplate().Render(w, "add_workout_planned_form", data)
+}
+
+func LiveWorkoutGetHandler(w http.ResponseWriter, r *http.Request) {
+
+}

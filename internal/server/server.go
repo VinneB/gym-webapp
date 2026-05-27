@@ -34,6 +34,8 @@ func StartServer() {
 	mux.HandleFunc("POST /htmx/workoutplans", WorkoutPlansPostHandler)
 	mux.HandleFunc("GET /htmx/addworkout/selecttype", AddWorkoutSelectTypeGetHandler)
 	mux.HandleFunc("GET /htmx/addworkout/selectplan", AddWorkoutSelectPlanGetHandler)
+	mux.HandleFunc("GET /htmx/addworkout/selectplanlive", AddWorkoutSelectPlanLiveGetHandler)
+	mux.HandleFunc("GET /liveworkout", LiveWorkoutGetHandler)
 	mux.HandleFunc("/static/", middleware.HandleFileServerWithLogging)
 	mux.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "test/favicon.ico")

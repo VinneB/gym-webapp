@@ -21,6 +21,15 @@ CREATE TABLE IF NOT EXISTS workouts (
     plan_name TEXT
 );
 
+CREATE TABLE IF NOT EXISTS live_workout_session (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    start_time DATETIME NOT NULL,
+    end_time DATETIME,
+    user_email TEXT NOT NULL,
+    plan_name TEXT,
+    sets TEXT
+);
+
 CREATE TABLE IF NOT EXISTS exercises (
     name TEXT PRIMARY KEY,
     data TEXT NOT NULL

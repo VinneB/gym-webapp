@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"hash"
 	"log"
 	"slices"
 	"strconv"
@@ -39,6 +40,8 @@ var addPlanWorkoutText string = `INSERT INTO plan_workouts (name, user_email, da
 
 var getPlanWorkoutText string = `SELECT * FROM plan_workouts WHERE user_email=? AND name=?;`
 
+var addLiveWorkoutSessionText string = `INSERT INTO live_workout_session (user_email, start_time, end_time, plan_name, sets) VALUES (:user_email, :start_time, :end_time, :plan_name, :sets);`
+
 var (
 	rootPathDB string = "data/"
 	dataPathDB string = rootPathDB + "data.db"
@@ -59,6 +62,7 @@ var (
 	getAllSetsWithWorkoutIdStmt *sqlx.Stmt
 	getAllPlanWorkoutStmt       *sqlx.Stmt
 	getPlanWorkoutStmt          *sqlx.Stmt
+	addLiveWorkoutSessionStmt   *sqlx.NamedStmt
 )
 
 func Connect() error {
@@ -129,6 +133,12 @@ func Connect() error {
 		return err
 	}
 
+	temp_addLiveWorkoutSessionStmt, err := db.PrepareNamed(addLiveWorkoutSessionText)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
 	addExerciseStmt = temp_addExerciseStmt
 	addWorkoutStmt = temp_addWorkoutStmt
 	getAllUserWorkoutsStmt = temp_getUserWorkoutsStmt
@@ -141,6 +151,7 @@ func Connect() error {
 	getAllPlanWorkoutStmt = temp_getAllPlanWorkoutStmt
 	addPlanWorkoutStmt = temp_addPlanWorkoutStmt
 	getPlanWorkoutStmt = temp_getPlanWorkoutStmt
+	addLiveWorkoutSessionStmt = temp_addLiveWorkoutSessionStmt
 	log.Println("Connected to sqlite3 database")
 	return nil
 }
@@ -158,6 +169,7 @@ func CloseDatabase() {
 	getAllSetsWithWorkoutIdStmt.Close()
 	getAllPlanWorkoutStmt.Close()
 	addPlanWorkoutStmt.Close()
+	addLiveWorkoutSessionStmt.Close()
 	log.Println("Closed sqlite3 database")
 }
 
@@ -487,4 +499,32 @@ func GetPlanWorkout(workoutPlanName string, userEmail string) (structapi.PlanWor
 		return structapi.PlanWorkout{}, err
 	}
 	return workout, nil
+}
+
+func AddLiveWorkoutSession(session structapi.LiveWorkoutSession) error {
+	sessionSqlForm, err := liveWorkoutSessionToSqlForm(session)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	_, err = addLiveWorkoutSessionStmt.Exec(&sessionSqlForm)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	return nil
+}
+
+func GetLiveWorkoutSession(userEmail string) error {
+	return nil
+}
+
+func liveWorkoutSessionToSqlForm(session structapi.LiveWorkoutSession) (structapi.LiveWorkoutSessionSqlForm, error) {
+
+	return structapi.LiveWorkoutSessionSqlForm{}, nil
+}
+
+func sqlFormToLiveWorkoutSession(session structapi.LiveWorkoutSessionSqlForm) (structapi.LiveWorkoutSession, error) {
+
+	return structapi.LiveWorkoutSession{}, nil
 }
